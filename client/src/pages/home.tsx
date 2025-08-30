@@ -186,7 +186,7 @@ export default function Home() {
                   You haven't scheduled any appointments yet. Get started by booking your free security audit.
                 </p>
                 <Button 
-                  onClick={() => window.location.href = '/landing'}
+                  onClick={() => window.location.href = '/'}
                   data-testid="button-get-started"
                 >
                   <Calendar className="mr-2 h-4 w-4" />

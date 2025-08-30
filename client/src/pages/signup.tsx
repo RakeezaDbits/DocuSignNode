@@ -80,8 +80,8 @@ export default function Signup() {
         description: "Welcome to GuardPortal! Check your email for confirmation.",
       });
 
-      // Redirect to home page
-      navigate('/');
+      // Redirect to dashboard
+      setLocation('/dashboard');
       
     } catch (error) {
       toast({
