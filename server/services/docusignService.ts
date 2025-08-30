@@ -43,11 +43,14 @@ class DocusignService {
             : 'account-d.docusign.com'
         );
 
+        // Format the private key properly
+        const formattedPrivateKey = privateKey.replace(/\\n/g, '\n');
+
         const results = await this.apiClient.requestJWTUserToken(
           integrationKey,
           userId,
           ['signature', 'impersonation'],
-          privateKey,
+          formattedPrivateKey,
           3600
         );
 
@@ -61,6 +64,7 @@ class DocusignService {
       }
     } catch (error) {
       console.error('DocuSign authentication error:', error);
+      // Don't throw error, just log it so app can still start
     }
   }
 

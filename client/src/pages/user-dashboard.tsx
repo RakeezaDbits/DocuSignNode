@@ -27,7 +27,7 @@ export default function UserDashboard() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: appointments } = useQuery({
+  const { data: appointments } = useQuery<any[]>({
     queryKey: ["/api/appointments/my"],
     enabled: isAuthenticated,
   });
@@ -36,7 +36,7 @@ export default function UserDashboard() {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  const upcomingAppointment = appointments?.find(
+  const upcomingAppointment = (appointments as any[])?.find(
     (apt: any) => apt.status !== 'completed' && apt.status !== 'cancelled'
   );
 
@@ -53,7 +53,7 @@ export default function UserDashboard() {
             
             <div className="flex items-center space-x-4">
               <span className="text-sm text-muted-foreground">
-                Welcome, {user?.firstName || 'User'}
+                Welcome, {(user as any)?.firstName || 'User'}
               </span>
               <Button
                 variant="ghost"
@@ -129,9 +129,9 @@ export default function UserDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {appointments?.length ? (
+            {(appointments as any[])?.length ? (
               <div className="space-y-4">
-                {appointments.map((appointment: any) => (
+                {(appointments as any[]).map((appointment: any) => (
                   <div key={appointment.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
                     <div className="flex-1">
                       <div className="flex items-center space-x-4">

@@ -8,7 +8,7 @@ import { Link } from "wouter";
 export default function Home() {
   const { user } = useAuth();
   
-  const { data: appointments } = useQuery({
+  const { data: appointments } = useQuery<any[]>({
     queryKey: ["/api/appointments/my"],
   });
 
@@ -27,7 +27,7 @@ export default function Home() {
             
             <div className="flex items-center space-x-4">
               <span className="text-sm text-muted-foreground">
-                Welcome, {user?.firstName || 'User'}
+                Welcome, {(user as any)?.firstName || 'User'}
               </span>
               <Button
                 variant="ghost"
@@ -64,7 +64,7 @@ export default function Home() {
                 </Button>
               </Link>
               
-              {user?.isAdmin && (
+              {(user as any)?.isAdmin && (
                 <Link href="/admin">
                   <Button variant="outline" className="w-full justify-start" data-testid="button-admin-panel">
                     <Shield className="mr-2 h-4 w-4" />
@@ -158,7 +158,7 @@ export default function Home() {
         </div>
 
         {/* Welcome Message for New Users */}
-        {!appointments?.length && (
+        {(!appointments || appointments.length === 0) && (
           <Card className="mt-8" data-testid="card-welcome-message">
             <CardContent className="pt-6">
               <div className="text-center py-8">

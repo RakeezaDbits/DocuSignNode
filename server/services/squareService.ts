@@ -30,7 +30,7 @@ class SquareService {
 
   async processPayment(request: PaymentRequest): Promise<PaymentResult> {
     try {
-      const { paymentsApi } = this.client;
+      const paymentsApi = this.client.paymentsApi;
 
       const requestBody = {
         sourceId: request.sourceId,
@@ -63,7 +63,7 @@ class SquareService {
 
   async refundPayment(paymentId: string, amount?: number): Promise<any> {
     try {
-      const { refundsApi } = this.client;
+      const refundsApi = this.client.refundsApi;
 
       const requestBody = {
         paymentId,

@@ -25,7 +25,7 @@ export default function AdminDashboard() {
       return;
     }
     
-    if (!isLoading && isAuthenticated && !user?.isAdmin) {
+    if (!isLoading && isAuthenticated && !(user as any)?.isAdmin) {
       toast({
         title: "Access Denied",
         description: "Admin access required",
@@ -38,17 +38,17 @@ export default function AdminDashboard() {
     }
   }, [isAuthenticated, isLoading, user, toast]);
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<any>({
     queryKey: ["/api/admin/stats"],
-    enabled: isAuthenticated && user?.isAdmin,
+    enabled: isAuthenticated && (user as any)?.isAdmin,
   });
 
-  const { data: appointments } = useQuery({
+  const { data: appointments } = useQuery<any[]>({
     queryKey: ["/api/admin/appointments"],
-    enabled: isAuthenticated && user?.isAdmin,
+    enabled: isAuthenticated && (user as any)?.isAdmin,
   });
 
-  if (isLoading || !isAuthenticated || !user?.isAdmin) {
+  if (isLoading || !isAuthenticated || !(user as any)?.isAdmin) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
@@ -93,7 +93,7 @@ export default function AdminDashboard() {
             
             <div className="flex items-center space-x-4">
               <span className="text-sm text-muted-foreground">
-                Welcome, {user?.firstName || 'Admin'}
+                Welcome, {(user as any)?.firstName || 'Admin'}
               </span>
               <Button
                 variant="ghost"
@@ -128,7 +128,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Appointments</p>
-                  <p className="text-2xl font-bold text-card-foreground">{stats?.total || 0}</p>
+                  <p className="text-2xl font-bold text-card-foreground">{(stats as any)?.total || 0}</p>
                 </div>
                 <Calendar className="text-primary text-2xl" />
               </div>
@@ -140,7 +140,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-accent">{stats?.pending || 0}</p>
+                  <p className="text-2xl font-bold text-accent">{(stats as any)?.pending || 0}</p>
                 </div>
                 <Clock className="text-accent text-2xl" />
               </div>
@@ -152,7 +152,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Confirmed</p>
-                  <p className="text-2xl font-bold text-secondary">{stats?.confirmed || 0}</p>
+                  <p className="text-2xl font-bold text-secondary">{(stats as any)?.confirmed || 0}</p>
                 </div>
                 <CheckCircle className="text-secondary text-2xl" />
               </div>
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
                 <div>
                   <p className="text-sm text-muted-foreground">Revenue</p>
                   <p className="text-2xl font-bold text-card-foreground">
-                    ${stats?.revenue?.toLocaleString() || '0'}
+                    ${(stats as any)?.revenue?.toLocaleString() || '0'}
                   </p>
                 </div>
                 <DollarSign className="text-primary text-2xl" />
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {appointments?.map((appointment: any) => (
+                  {(appointments as any[])?.map((appointment: any) => (
                     <tr key={appointment.id} className="hover:bg-muted/30" data-testid={`row-appointment-${appointment.id}`}>
                       <td className="px-6 py-4">
                         <div>
