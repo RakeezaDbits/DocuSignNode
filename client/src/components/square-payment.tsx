@@ -17,87 +17,148 @@ export default function SquarePayment({ amount, onSuccess, onError }: SquarePaym
   const cardRef = useRef<any>(null);
   const { toast } = useToast();
 
+  // Placeholder for payment object and card object to satisfy the type checker for now
+  // These will be populated by the Square SDK
+  const [payments, setPayments] = useState<any>(null);
+  const [card, setCard] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Get application ID and location ID from environment variables
+  const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID || process.env.SQUARE_APPLICATION_ID || 'sandbox-sq0idb-example';
+  const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID || process.env.SQUARE_LOCATION_ID || 'main';
+
+  // Load Square Web SDK
   useEffect(() => {
-    const initializeSquare = async () => {
-      try {
-        // Check if Square Web SDK is loaded
-        if (!(window as any).Square) {
-          // Load Square Web SDK
-          const script = document.createElement('script');
-          script.src = 'https://web.squarecdn.com/v1/square.js';
-          script.async = true;
-          script.onload = () => initSquarePayments();
-          script.onerror = () => {
-            setIsLoading(false);
-            onError('Failed to load payment system');
-          };
-          document.head.appendChild(script);
-        } else {
-          initSquarePayments();
-        }
-      } catch (error) {
-        console.error('Square initialization error:', error);
-        setIsLoading(false);
-        onError('Payment system initialization failed');
-      }
-    };
-
-    const initSquarePayments = async () => {
-      try {
-        const Square = (window as any).Square;
-        
-        if (!Square) {
-          throw new Error('Square SDK not loaded');
-        }
-
-        // Get application ID from environment
-        const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID || process.env.SQUARE_APPLICATION_ID || 'sandbox-sq0idb-example';
-        const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID || process.env.SQUARE_LOCATION_ID || 'main';
-
-        const payments = Square.payments(applicationId, locationId);
-        
-        const card = await payments.card();
-        await card.attach(cardButtonRef.current);
-        
-        cardRef.current = card;
-        setSquareReady(true);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Square payments initialization error:', error);
-        setIsLoading(false);
-        onError('Payment form initialization failed');
-      }
-    };
-
-    initializeSquare();
-  }, [onError]);
-
-  const handlePayment = async () => {
-    if (!cardRef.current) {
-      onError('Payment form not ready');
+    // Check if SDK is already loaded
+    if (window.Square) {
+      console.log('Square Web SDK already loaded');
       return;
     }
 
-    try {
-      setIsLoading(true);
-      
-      const result = await cardRef.current.tokenize();
-      
-      if (result.status === 'OK') {
-        onSuccess(result.token);
-        toast({
-          title: "Payment Successful",
-          description: "Your payment has been processed successfully.",
+    // Check if script is already being loaded
+    const existingScript = document.querySelector('script[src*="square.js"]');
+    if (existingScript) {
+      console.log('Square Web SDK script already exists');
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://sandbox.web.squarecdn.com/v1/square.js';
+    script.async = true;
+    script.onload = () => {
+      console.log('Square Web SDK loaded successfully');
+    };
+    script.onerror = (error) => {
+      console.error('Failed to load Square Web SDK:', error);
+      onError('Failed to load payment system. Please check your internet connection.');
+    };
+
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup on unmount
+      const scriptToRemove = document.querySelector('script[src*="square.js"]');
+      if (scriptToRemove) {
+        document.head.removeChild(scriptToRemove);
+      }
+    };
+  }, [onError]);
+
+
+  useEffect(() => {
+    async function initializeSquare() {
+      try {
+        // Wait for Square SDK to load
+        if (!window.Square) {
+          console.error('Square Web SDK not loaded');
+          onError('Square Web SDK not loaded');
+          return;
+        }
+
+        // Initialize payments with proper error handling
+        const payments = window.Square.payments(applicationId, locationId);
+        setPayments(payments);
+
+        // Create and attach card with better error handling
+        const card = await payments.card({
+          style: {
+            '.input-container': {
+              borderColor: '#d1d5db',
+              borderRadius: '6px'
+            },
+            '.input-container.is-focus': {
+              borderColor: '#3b82f6'
+            },
+            '.input-container.is-error': {
+              borderColor: '#ef4444'
+            }
+          }
         });
+
+        await card.attach('#card-container');
+        setCard(card);
+
+        console.log('Square payment form initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize Square payments:', error);
+        onError(`Payment form initialization failed: ${error.message || 'Unknown error'}`);
+      }
+    }
+
+    // Add a small delay to ensure DOM is ready
+    const timer = setTimeout(initializeSquare, 100);
+    return () => clearTimeout(timer);
+  }, [applicationId, locationId, onError]);
+
+
+  const handlePayment = async () => {
+    if (!card || !payments) {
+      onError('Payment system not ready. Please refresh the page and try again.');
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      console.log('Starting payment tokenization...');
+      const result = await card.tokenize();
+
+      if (result.status === 'OK' && result.token) {
+        console.log('Tokenization successful');
+
+        // Send token to backend
+        const response = await fetch('/api/payment/process', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sourceId: result.token,
+            amount: amount,
+          }),
+        });
+
+        if (response.ok) {
+          const responseData = await response.json();
+          console.log('Payment processed successfully');
+          onSuccess(result.token);
+        } else {
+          const errorData = await response.json();
+          console.error('Payment processing failed:', errorData);
+          onError(errorData.message || 'Payment processing failed on server');
+        }
       } else {
-        const errorMessage = result.errors?.map((error: any) => error.message).join(', ') || 'Payment failed';
+        console.error('Tokenization failed:', result.errors);
+        const errorMessage = result.errors && result.errors.length > 0
+          ? result.errors[0].detail
+          : 'Invalid payment information';
         onError(errorMessage);
       }
     } catch (error) {
       console.error('Payment processing error:', error);
-      onError('Payment processing failed');
+      onError(`Payment processing failed: ${error.message || 'Unknown error'}`);
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -119,20 +180,20 @@ export default function SquarePayment({ amount, onSuccess, onError }: SquarePaym
           </div>
         ) : squareReady ? (
           <div className="space-y-6">
-            <div 
-              ref={cardButtonRef} 
+            <div
+              ref={cardButtonRef}
               className="min-h-[120px] p-4 border border-input rounded-lg bg-background"
               data-testid="square-card-form"
             />
-            
-            <Button 
+
+            <Button
               onClick={handlePayment}
               className="w-full bg-primary text-primary-foreground py-3 font-semibold hover:bg-primary/90 transition-colors"
-              disabled={isLoading}
+              disabled={isLoading || isProcessing}
               data-testid="button-pay-now"
             >
               <CreditCard className="mr-2 h-4 w-4" />
-              {isLoading ? 'Processing...' : 'Pay Now'}
+              {isProcessing ? 'Processing...' : 'Pay Now'}
             </Button>
 
             <div className="text-center text-xs text-muted-foreground">
@@ -143,8 +204,8 @@ export default function SquarePayment({ amount, onSuccess, onError }: SquarePaym
         ) : (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-4">Payment form failed to load</p>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => window.location.reload()}
               data-testid="button-retry-payment"
             >
