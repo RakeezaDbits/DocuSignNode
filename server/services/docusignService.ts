@@ -1,4 +1,3 @@
-
 import * as docusign from 'docusign-esign';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -33,7 +32,7 @@ class DocusignService {
 
     this.apiClient = new docusign.ApiClient();
     this.apiClient.setBasePath(this.basePath);
-    
+
     if (this.integrationKey && this.userId && this.privateKey) {
       this.configureJWTAuth();
     } else {
@@ -44,7 +43,7 @@ class DocusignService {
   private async configureJWTAuth(): Promise<void> {
     try {
       const scopes = ['signature', 'impersonation'];
-      
+
       const results = await this.apiClient.requestJWTUserToken(
         this.integrationKey,
         this.userId,
@@ -142,7 +141,7 @@ Signature: _____________________
 
 Date: _____________________
     `;
-    
+
     return Buffer.from(agreementText).toString('base64');
   }
 
