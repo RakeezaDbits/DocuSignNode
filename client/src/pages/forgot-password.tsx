@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,12 +33,12 @@ export default function ForgotPassword() {
       }
 
       setIsEmailSent(true);
-      
+
       toast({
         title: "Reset Email Sent",
         description: "Check your email for password reset instructions.",
       });
-      
+
     } catch (error) {
       toast({
         title: "Error",
@@ -64,7 +63,7 @@ export default function ForgotPassword() {
             <CardTitle className="text-2xl font-bold">Email Sent!</CardTitle>
             <p className="text-orange-100 mt-2">Check your inbox for reset instructions</p>
           </CardHeader>
-          
+
           <CardContent className="p-8 text-center">
             <div className="space-y-4">
               <p className="text-gray-600">
@@ -73,7 +72,7 @@ export default function ForgotPassword() {
               <p className="text-sm text-gray-500">
                 The link will expire in 1 hour for security reasons.
               </p>
-              
+
               <div className="mt-6 pt-6 border-t">
                 <p className="text-sm text-gray-500 mb-4">
                   Didn't receive the email? Check your spam folder or try again.
@@ -87,10 +86,10 @@ export default function ForgotPassword() {
                 </Button>
               </div>
             </div>
-            
+
             <div className="mt-6">
               <Link
-                to="/login"
+                href="/login"
                 className="inline-flex items-center text-orange-600 hover:text-orange-800 font-semibold hover:underline"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -115,7 +114,7 @@ export default function ForgotPassword() {
           <CardTitle className="text-2xl font-bold">Forgot Password?</CardTitle>
           <p className="text-orange-100 mt-2">No worries, we'll help you reset it</p>
         </CardHeader>
-        
+
         <CardContent className="p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -150,7 +149,7 @@ export default function ForgotPassword() {
 
           <div className="mt-6 text-center">
             <Link
-              to="/login"
+              href="/login"
               className="inline-flex items-center text-orange-600 hover:text-orange-800 font-semibold hover:underline"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />

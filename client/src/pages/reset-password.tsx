@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useLocation, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,8 +13,8 @@ export default function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const [searchParams] = useLocation();
+  const navigate = useLocation()[1]; // wouter's navigate is the second element of the returned array
   const { toast } = useToast();
 
   const token = searchParams.get('token');
@@ -71,12 +70,12 @@ export default function ResetPassword() {
       }
 
       setIsSuccess(true);
-      
+
       toast({
         title: "Password Reset Successful",
         description: "Your password has been updated successfully.",
       });
-      
+
     } catch (error) {
       toast({
         title: "Reset Failed",
@@ -101,13 +100,13 @@ export default function ResetPassword() {
             <CardTitle className="text-2xl font-bold">Password Reset!</CardTitle>
             <p className="text-green-100 mt-2">Your password has been updated</p>
           </CardHeader>
-          
+
           <CardContent className="p-8 text-center">
             <div className="space-y-4">
               <p className="text-gray-600">
                 Your password has been successfully reset. You can now sign in with your new password.
               </p>
-              
+
               <div className="mt-6 pt-6 border-t">
                 <Button
                   onClick={() => navigate('/login')}
@@ -135,7 +134,7 @@ export default function ResetPassword() {
           <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
           <p className="text-purple-100 mt-2">Enter your new password below</p>
         </CardHeader>
-        
+
         <CardContent className="p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -201,7 +200,7 @@ export default function ResetPassword() {
 
           <div className="mt-6 text-center">
             <Link
-              to="/login"
+              href="/login" // wouter uses href for Link component
               className="inline-flex items-center text-purple-600 hover:text-purple-800 font-semibold hover:underline"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
