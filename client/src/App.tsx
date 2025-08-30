@@ -20,16 +20,19 @@ function Router() {
   return (
     <Switch>
       {/* Public routes - available without authentication */}
+      <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/signup" component={Signup} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/landing" component={Landing} />
-      
+
       {/* Protected dashboard route - requires authentication */}
       <Route path="/dashboard">
         {isLoading ? (
-          <div className="min-h-screen flex items-center justify-center">Loading...</div>
+          <div className="min-h-screen flex items-center justify-center">
+            Loading...
+          </div>
         ) : !isAuthenticated ? (
           <Login />
         ) : user?.isAdmin ? (
@@ -38,21 +41,23 @@ function Router() {
           <UserDashboard />
         )}
       </Route>
-      
+
       {/* Admin route */}
       <Route path="/admin">
         {isLoading ? (
-          <div className="min-h-screen flex items-center justify-center">Loading...</div>
+          <div className="min-h-screen flex items-center justify-center">
+            Loading...
+          </div>
         ) : !isAuthenticated ? (
           <Login />
         ) : (
           <AdminDashboard />
         )}
       </Route>
-      
+
       {/* Home route - always shows home page */}
       <Route path="/" component={Home} />
-      
+
       <Route component={NotFound} />
     </Switch>
   );
