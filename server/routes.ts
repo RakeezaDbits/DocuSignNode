@@ -1,22 +1,136 @@
+
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertAppointmentSchema, updateAppointmentSchema } from "@shared/schema";
 import { squareService } from "./services/squareService";
 import { docusignService } from "./services/docusignService";
 import { emailService } from "./services/emailService";
+import { authService } from "./services/authService";
+import jwt from "jsonwebtoken";
+
+// Auth middleware
+const authenticateToken = async (req: any, res: any, next: any) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: "Access token required" });
+  }
+
+  const user = authService.verifyToken(token);
+  if (!user) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+
+  req.user = user;
+  next();
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
-
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // Authentication routes
+  app.post('/api/auth/signup', async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
+      const { email, password, firstName, lastName } = req.body;
+      
+      if (!email || !password || !firstName || !lastName) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters long" });
+      }
+
+      const result = await authService.signup({ email, password, firstName, lastName });
+      
+      res.json({ 
+        message: "Account created successfully",
+        user: result.user,
+        token: result.token
+      });
+    } catch (error) {
+      console.error("Signup error:", error);
+      res.status(400).json({ 
+        message: error instanceof Error ? error.message : "Signup failed" 
+      });
+    }
+  });
+
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+
+      const result = await authService.login({ email, password });
+      
+      res.json({ 
+        message: "Login successful",
+        user: result.user,
+        token: result.token
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(401).json({ 
+        message: error instanceof Error ? error.message : "Login failed" 
+      });
+    }
+  });
+
+  app.post('/api/auth/forgot-password', async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      await authService.forgotPassword(email);
+      
+      res.json({ 
+        message: "If an account with that email exists, a password reset link has been sent" 
+      });
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({ message: "Failed to process forgot password request" });
+    }
+  });
+
+  app.post('/api/auth/reset-password', async (req, res) => {
+    try {
+      const { token, password } = req.body;
+      
+      if (!token || !password) {
+        return res.status(400).json({ message: "Token and new password are required" });
+      }
+
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters long" });
+      }
+
+      await authService.resetPassword(token, password);
+      
+      res.json({ message: "Password reset successfully" });
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(400).json({ 
+        message: error instanceof Error ? error.message : "Password reset failed" 
+      });
+    }
+  });
+
+  app.get('/api/auth/user', authenticateToken, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Remove password from response
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -24,16 +138,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Appointment routes
-  app.post('/api/appointments', isAuthenticated, async (req: any, res) => {
+  app.post('/api/appointments', authenticateToken, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const validatedData = insertAppointmentSchema.parse(req.body);
       
       // Create appointment
       const appointment = await storage.createAppointment({
         ...validatedData,
         userId,
-        email: req.user.claims.email || validatedData.email,
+        email: req.user.email || validatedData.email,
       });
 
       // Process payment with Square
@@ -102,9 +216,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/appointments/my', isAuthenticated, async (req: any, res) => {
+  app.get('/api/appointments/my', authenticateToken, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const appointments = await storage.getUserAppointments(userId);
       res.json(appointments);
     } catch (error) {
@@ -113,14 +227,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/appointments/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/appointments/:id', authenticateToken, async (req: any, res) => {
     try {
       const appointment = await storage.getAppointment(req.params.id);
       if (!appointment) {
         return res.status(404).json({ message: 'Appointment not found' });
       }
 
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       // Check if user owns the appointment or is admin
@@ -135,14 +249,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/appointments/:id', isAuthenticated, async (req: any, res) => {
+  app.patch('/api/appointments/:id', authenticateToken, async (req: any, res) => {
     try {
       const appointment = await storage.getAppointment(req.params.id);
       if (!appointment) {
         return res.status(404).json({ message: 'Appointment not found' });
       }
 
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       // Check if user owns the appointment or is admin
@@ -163,9 +277,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes
-  app.get('/api/admin/appointments', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/appointments', authenticateToken, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user?.isAdmin) {
@@ -184,9 +298,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/stats', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/stats', authenticateToken, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user?.isAdmin) {

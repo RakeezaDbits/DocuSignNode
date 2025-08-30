@@ -39,13 +39,13 @@ export default function Landing() {
             <div className="flex items-center space-x-4">
               <Button 
                 variant="ghost" 
-                onClick={() => window.location.href = '/api/login'}
+                onClick={() => window.location.href = '/login'}
                 data-testid="button-login"
               >
                 Login
               </Button>
               <Button 
-                onClick={() => window.location.href = '/api/login'}
+                onClick={() => window.location.href = '/signup'}
                 data-testid="button-signup"
               >
                 Sign Up
