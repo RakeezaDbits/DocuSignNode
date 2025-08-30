@@ -83,8 +83,14 @@ class AuthService {
       updatedAt: new Date(),
     });
 
-    // Send welcome email
-    await emailService.sendWelcomeEmail(user);
+    // Send welcome email (optional in development)
+    try {
+      if (process.env.NODE_ENV === 'production') {
+        await emailService.sendWelcomeEmail(user);
+      }
+    } catch (error) {
+      console.log('Welcome email not sent (development mode or email not configured)');
+    }
 
     // Generate token
     const token = this.generateToken({
