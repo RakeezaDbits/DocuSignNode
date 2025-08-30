@@ -6,10 +6,11 @@ import { Shield, Calendar, FileText, Settings } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   
   const { data: appointments } = useQuery<any[]>({
     queryKey: ["/api/appointments/my"],
+    enabled: isAuthenticated, // Only fetch if user is authenticated
   });
 
   const upcomingAppointment = appointments?.[0];
@@ -26,16 +27,33 @@ export default function Home() {
             </div>
             
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">
-                Welcome, {(user as any)?.firstName || 'User'}
-              </span>
-              <Button
-                variant="ghost"
-                onClick={() => window.location.href = '/api/logout'}
-                data-testid="button-logout"
-              >
-                Logout
-              </Button>
+              {isAuthenticated ? (
+                <>
+                  <span className="text-sm text-muted-foreground">
+                    Welcome, {(user as any)?.firstName || 'User'}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    onClick={() => window.location.href = '/api/logout'}
+                    data-testid="button-logout"
+                  >
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login">
+                    <Button variant="ghost">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/signup">
+                    <Button variant="outline">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

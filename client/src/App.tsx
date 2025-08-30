@@ -19,27 +19,40 @@ function Router() {
 
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
-        <>
-          <Route path="/" component={Landing} />
-          <Route path="/login" component={Login} />
-          <Route path="/signup" component={Signup} />
-          <Route path="/forgot-password" component={ForgotPassword} />
-          <Route path="/reset-password" component={ResetPassword} />
-        </>
-      ) : (
-        <>
-          <Route path="/">
-            {user?.isAdmin ? <AdminDashboard /> : <UserDashboard />}
-          </Route>
-          <Route path="/dashboard">
-            {user?.isAdmin ? <AdminDashboard /> : <UserDashboard />}
-          </Route>
-          <Route path="/home" component={Home} />
-          <Route path="/landing" component={Landing} />
-          <Route path="/admin" component={AdminDashboard} />
-        </>
-      )}
+      {/* Public routes - available without authentication */}
+      <Route path="/login" component={Login} />
+      <Route path="/signup" component={Signup} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/landing" component={Landing} />
+      
+      {/* Protected dashboard route - requires authentication */}
+      <Route path="/dashboard">
+        {isLoading ? (
+          <div className="min-h-screen flex items-center justify-center">Loading...</div>
+        ) : !isAuthenticated ? (
+          <Login />
+        ) : user?.isAdmin ? (
+          <AdminDashboard />
+        ) : (
+          <UserDashboard />
+        )}
+      </Route>
+      
+      {/* Admin route */}
+      <Route path="/admin">
+        {isLoading ? (
+          <div className="min-h-screen flex items-center justify-center">Loading...</div>
+        ) : !isAuthenticated ? (
+          <Login />
+        ) : (
+          <AdminDashboard />
+        )}
+      </Route>
+      
+      {/* Home route - always shows home page */}
+      <Route path="/" component={Home} />
+      
       <Route component={NotFound} />
     </Switch>
   );
