@@ -1,4 +1,5 @@
 import { SquareClient, SquareEnvironment } from 'square';
+import { v4 as uuidv4 } from 'uuid';
 
 interface PaymentRequest {
   amount: number; // in cents
@@ -15,15 +16,20 @@ interface PaymentResult {
 
 class SquareService {
   private client: SquareClient;
+  private locationId: string; // Added for locationId
 
   constructor() {
     const accessToken = process.env.SQUARE_ACCESS_TOKEN;
-    const environment = process.env.SQUARE_ENVIRONMENT === 'production' 
-      ? SquareEnvironment.Production 
+    const environment = process.env.SQUARE_ENVIRONMENT === 'production'
+      ? SquareEnvironment.Production
       : SquareEnvironment.Sandbox;
+    this.locationId = process.env.SQUARE_LOCATION_ID || ''; // Initialize locationId
 
     if (!accessToken) {
       throw new Error('Square access token not configured');
+    }
+    if (!this.locationId) {
+      throw new Error('Square location ID not configured'); // Check for location ID
     }
 
     this.client = new SquareClient({
@@ -36,7 +42,7 @@ class SquareService {
 
   async processPayment(request: PaymentRequest): Promise<PaymentResult> {
     try {
-      const paymentsApi = this.client.payments;
+      const paymentsApi = this.client.paymentsApi; // Corrected to paymentsApi
 
       const requestBody = {
         sourceId: request.sourceId,
@@ -47,6 +53,7 @@ class SquareService {
         idempotencyKey: `${request.appointmentId}-${Date.now()}`,
         note: `GuardPortal Security Audit - Appointment ${request.appointmentId}`,
         referenceId: request.appointmentId,
+        locationId: this.locationId, // Added locationId
       };
 
       const response = await paymentsApi.createPayment(requestBody);
@@ -69,7 +76,7 @@ class SquareService {
 
   async refundPayment(paymentId: string, amount?: number): Promise<any> {
     try {
-      const refundsApi = this.client.refunds;
+      const refundsApi = this.client.refundsApi; // Corrected to refundsApi
 
       const requestBody = {
         paymentId,

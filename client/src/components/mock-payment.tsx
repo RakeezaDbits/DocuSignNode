@@ -37,13 +37,16 @@ export default function MockPayment({
       // Generate a mock payment token
       const mockToken = `mock_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
+      setIsProcessing(false);
+      
+      // Show success toast first
       toast({
         title: "Payment Successful!",
         description: "Your payment has been processed successfully.",
       });
       
+      // Then call success callback
       onSuccess(mockToken);
-      setIsProcessing(false);
     }, 2000);
   };
 
