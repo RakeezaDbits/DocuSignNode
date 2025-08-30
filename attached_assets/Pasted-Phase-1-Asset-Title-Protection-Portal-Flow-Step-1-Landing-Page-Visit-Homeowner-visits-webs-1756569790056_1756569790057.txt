@@ -1,0 +1,16 @@
+Phase 1 – Asset & Title Protection Portal Flow
+ Step 1 – Landing Page Visit • Homeowner visits website. • Hero section with sub-headline and benefits. • CTA button: “ Schedule Your Free Audit Now”. Step 2 – Intake / Checkout Form • User clicks CTA → opens form. • Fields: Full Name, Email, Phone, Address, Preferred Date & Time (within 7 days), Checkbox for readiness. • Data saved in database → Appointment status set as Pending. Step 3 – Confirmation Page • Thank you message with booked date/time. • Checklist: receipts, valuables, warranty papers. • Optional Add-On Upsell: Title Protection $50/month. Step 4 – Automatic DocuSign Email • Immediately after signup, customer receives DocuSign agreement email. • Customer signs electronically → signed copy stored. • DocuSign status saved in database (Signed/Not Signed). Step 5 – Confirmation Email • Auto-triggered after signup. • Includes appointment details, checklist, officer note, reschedule link. Step 6 – Reminder Email (24 Hours Before Audit) • Automatic reminder email sent one day before. • Includes reminder of date/time + preparation checklist. Step 7 – Officer Visit (Manual in Phase 1) • Officer visits home and performs audit manually. • System part for officer upload & reporting will come in
+Jab user form fill kare (Name, Email, Address, Date/Time), uske end me  button ho.
+Payment successful hote hi:
+Appointment confirm ho jata hai
+DocuSign agreement trigger hota hai
+Confirmation email + reminder setup ho jata hai
+When they booked the appointment, they should be paying for the first month of service which is $100 and $125 for the service charge at the Guard come and do the audit
+
+
+proper authentiation krwanii he jo appointment book kreiyt gha usy login/registration krna required hogha...
+jo appointment book kreiy gha.. wo square payment gateway ke throught payment kreiy gha... 
+DocuSign bhi implement krna he 
+Admin Panel bhii aesa ho... jo client ki sab requirments ko npora kreiy
+
+Node js or postgres sql em full setup krwana start to end jis em clint ki btayii huyii sab requirments pori hojaye...
