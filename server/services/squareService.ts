@@ -23,14 +23,14 @@ class SquareService {
       : SquareEnvironment.Sandbox;
 
     this.client = new SquareClient({
-      accessToken,
+      accessToken: accessToken || '',
       environment,
     });
   }
 
   async processPayment(request: PaymentRequest): Promise<PaymentResult> {
     try {
-      const paymentsApi = this.client.paymentsApi;
+      const paymentsApi = this.client.payments;
 
       const requestBody = {
         sourceId: request.sourceId,
@@ -63,7 +63,7 @@ class SquareService {
 
   async refundPayment(paymentId: string, amount?: number): Promise<any> {
     try {
-      const refundsApi = this.client.refundsApi;
+      const refundsApi = this.client.refunds;
 
       const requestBody = {
         paymentId,
