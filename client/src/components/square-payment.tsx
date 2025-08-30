@@ -10,7 +10,11 @@ interface SquarePaymentProps {
   onError: (error: string) => void;
 }
 
-export default function SquarePayment({ amount, onSuccess, onError }: SquarePaymentProps) {
+export default function SquarePayment({
+  amount,
+  onSuccess,
+  onError,
+}: SquarePaymentProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [squareReady, setSquareReady] = useState(false);
   const cardButtonRef = useRef<HTMLDivElement>(null);
@@ -24,33 +28,36 @@ export default function SquarePayment({ amount, onSuccess, onError }: SquarePaym
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Get application ID and location ID from environment variables
-  const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID || 'sandbox-sq0idb-example';
-  const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID || 'main';
+  const applicationId =
+    import.meta.env.SQUARE_APPLICATION_ID || "sandbox-sq0idb-example";
+  const locationId = import.meta.env.SQUARE_LOCATION_ID || "main";
 
   // Load Square Web SDK
   useEffect(() => {
     // Check if SDK is already loaded
     if (window.Square) {
-      console.log('Square Web SDK already loaded');
+      console.log("Square Web SDK already loaded");
       return;
     }
 
     // Check if script is already being loaded
     const existingScript = document.querySelector('script[src*="square.js"]');
     if (existingScript) {
-      console.log('Square Web SDK script already exists');
+      console.log("Square Web SDK script already exists");
       return;
     }
 
-    const script = document.createElement('script');
-    script.src = 'https://sandbox.web.squarecdn.com/v1/square.js';
+    const script = document.createElement("script");
+    script.src = "https://sandbox.web.squarecdn.com/v1/square.js";
     script.async = true;
     script.onload = () => {
-      console.log('Square Web SDK loaded successfully');
+      console.log("Square Web SDK loaded successfully");
     };
     script.onerror = (error) => {
-      console.error('Failed to load Square Web SDK:', error);
-      onError('Failed to load payment system. Please check your internet connection.');
+      console.error("Failed to load Square Web SDK:", error);
+      onError(
+        "Failed to load payment system. Please check your internet connection.",
+      );
     };
 
     document.head.appendChild(script);
@@ -64,14 +71,13 @@ export default function SquarePayment({ amount, onSuccess, onError }: SquarePaym
     };
   }, [onError]);
 
-
   useEffect(() => {
     async function initializeSquare() {
       try {
         // Wait for Square SDK to load
         if (!window.Square) {
-          console.error('Square Web SDK not loaded');
-          onError('Square Web SDK not loaded');
+          console.error("Square Web SDK not loaded");
+          onError("Square Web SDK not loaded");
           return;
         }
 
@@ -82,26 +88,28 @@ export default function SquarePayment({ amount, onSuccess, onError }: SquarePaym
         // Create and attach card with better error handling
         const card = await payments.card({
           style: {
-            '.input-container': {
-              borderColor: '#d1d5db',
-              borderRadius: '6px'
+            ".input-container": {
+              borderColor: "#d1d5db",
+              borderRadius: "6px",
             },
-            '.input-container.is-focus': {
-              borderColor: '#3b82f6'
+            ".input-container.is-focus": {
+              borderColor: "#3b82f6",
             },
-            '.input-container.is-error': {
-              borderColor: '#ef4444'
-            }
-          }
+            ".input-container.is-error": {
+              borderColor: "#ef4444",
+            },
+          },
         });
 
-        await card.attach('#card-container');
+        await card.attach("#card-container");
         setCard(card);
 
-        console.log('Square payment form initialized successfully');
+        console.log("Square payment form initialized successfully");
       } catch (error) {
-        console.error('Failed to initialize Square payments:', error);
-        onError(`Payment form initialization failed: ${error.message || 'Unknown error'}`);
+        console.error("Failed to initialize Square payments:", error);
+        onError(
+          `Payment form initialization failed: ${error.message || "Unknown error"}`,
+        );
       }
     }
 
@@ -110,27 +118,28 @@ export default function SquarePayment({ amount, onSuccess, onError }: SquarePaym
     return () => clearTimeout(timer);
   }, [applicationId, locationId, onError]);
 
-
   const handlePayment = async () => {
     if (!card || !payments) {
-      onError('Payment system not ready. Please refresh the page and try again.');
+      onError(
+        "Payment system not ready. Please refresh the page and try again.",
+      );
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      console.log('Starting payment tokenization...');
+      console.log("Starting payment tokenization...");
       const result = await card.tokenize();
 
-      if (result.status === 'OK' && result.token) {
-        console.log('Tokenization successful');
+      if (result.status === "OK" && result.token) {
+        console.log("Tokenization successful");
 
         // Send token to backend
-        const response = await fetch('/api/payment/process', {
-          method: 'POST',
+        const response = await fetch("/api/payment/process", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             sourceId: result.token,
@@ -140,23 +149,24 @@ export default function SquarePayment({ amount, onSuccess, onError }: SquarePaym
 
         if (response.ok) {
           const responseData = await response.json();
-          console.log('Payment processed successfully');
+          console.log("Payment processed successfully");
           onSuccess(result.token);
         } else {
           const errorData = await response.json();
-          console.error('Payment processing failed:', errorData);
-          onError(errorData.message || 'Payment processing failed on server');
+          console.error("Payment processing failed:", errorData);
+          onError(errorData.message || "Payment processing failed on server");
         }
       } else {
-        console.error('Tokenization failed:', result.errors);
-        const errorMessage = result.errors && result.errors.length > 0
-          ? result.errors[0].detail
-          : 'Invalid payment information';
+        console.error("Tokenization failed:", result.errors);
+        const errorMessage =
+          result.errors && result.errors.length > 0
+            ? result.errors[0].detail
+            : "Invalid payment information";
         onError(errorMessage);
       }
     } catch (error) {
-      console.error('Payment processing error:', error);
-      onError(`Payment processing failed: ${error.message || 'Unknown error'}`);
+      console.error("Payment processing error:", error);
+      onError(`Payment processing failed: ${error.message || "Unknown error"}`);
     } finally {
       setIsProcessing(false);
     }
@@ -193,7 +203,7 @@ export default function SquarePayment({ amount, onSuccess, onError }: SquarePaym
               data-testid="button-pay-now"
             >
               <CreditCard className="mr-2 h-4 w-4" />
-              {isProcessing ? 'Processing...' : 'Pay Now'}
+              {isProcessing ? "Processing..." : "Pay Now"}
             </Button>
 
             <div className="text-center text-xs text-muted-foreground">
@@ -203,7 +213,9 @@ export default function SquarePayment({ amount, onSuccess, onError }: SquarePaym
           </div>
         ) : (
           <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">Payment form failed to load</p>
+            <p className="text-muted-foreground mb-4">
+              Payment form failed to load
+            </p>
             <Button
               variant="outline"
               onClick={() => window.location.reload()}

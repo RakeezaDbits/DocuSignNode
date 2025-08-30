@@ -1,0 +1,901 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset & Title Protection Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                },
+                fontFamily: {
+                    sans: ["Inter", "var(--font-sans)"],
+                }
+            },
+        }
+    };
+    </script>
+    <style>
+        :root {
+            --radius: 8px;
+            --background: hsl(60 9% 98%);
+            --foreground: hsl(222 84% 5%);
+            --card: hsl(0 0% 100%);
+            --card-foreground: hsl(222 84% 5%);
+            --primary: hsl(221 83% 53%);
+            --primary-foreground: hsl(210 40% 98%);
+            --secondary: hsl(158 64% 52%);
+            --secondary-foreground: hsl(222 84% 5%);
+            --muted: hsl(210 40% 96%);
+            --muted-foreground: hsl(215 16% 47%);
+            --accent: hsl(20 91% 48%);
+            --accent-foreground: hsl(210 40% 98%);
+            --destructive: hsl(0 63% 31%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(214 32% 91%);
+            --input: hsl(214 32% 91%);
+            --ring: hsl(221 83% 53%);
+        }
+        
+        .dark {
+            --background: hsl(222 84% 5%);
+            --foreground: hsl(210 40% 98%);
+            --card: hsl(222 84% 5%);
+            --card-foreground: hsl(210 40% 98%);
+            --primary: hsl(217 91% 60%);
+            --primary-foreground: hsl(222 84% 5%);
+            --secondary: hsl(158 64% 52%);
+            --secondary-foreground: hsl(222 84% 5%);
+            --muted: hsl(217 32% 17%);
+            --muted-foreground: hsl(215 20% 65%);
+            --accent: hsl(20 91% 48%);
+            --accent-foreground: hsl(210 40% 98%);
+            --destructive: hsl(0 63% 31%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(217 32% 17%);
+            --input: hsl(217 32% 17%);
+            --ring: hsl(224 71% 4%);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+            transition: transform 0.3s ease;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .step-number {
+            background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground">
+    <!-- @COMPONENT: Header [Navigation component with authentication states] -->
+    <header class="sticky top-0 z-50 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b border-border">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-shield-alt text-primary text-2xl mr-3"></i>
+                        <span class="text-xl font-bold text-foreground">GuardPortal</span>
+                    </div>
+                </div>
+                
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#services" class="text-muted-foreground hover:text-foreground transition-colors">Services</a>
+                    <a href="#process" class="text-muted-foreground hover:text-foreground transition-colors">Process</a>
+                    <a href="#contact" class="text-muted-foreground hover:text-foreground transition-colors">Contact</a>
+                </nav>
+                
+                <div class="flex items-center space-x-4">
+                    <button class="text-muted-foreground hover:text-foreground transition-colors" data-event="click:handleLogin">
+                        <i class="fas fa-user mr-2"></i>Login
+                    </button>
+                    <button class="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors" data-event="click:handleSignup">
+                        Sign Up
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <!-- @COMPONENT: HeroSection [Main landing hero with CTA] -->
+    <section class="hero-gradient text-white py-20 lg:py-32">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto text-center animate-fade-in">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                    Protect Your Home's <span class="text-yellow-300">Asset & Title</span> Today
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 text-blue-100 leading-relaxed">
+                    Professional property protection services with comprehensive title monitoring, fraud prevention, and 24/7 security audits for your peace of mind.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+                    <div class="flex items-center text-lg">
+                        <i class="fas fa-check-circle text-green-300 mr-3"></i>
+                        <span>Free Security Audit</span>
+                    </div>
+                    <div class="flex items-center text-lg">
+                        <i class="fas fa-check-circle text-green-300 mr-3"></i>
+                        <span>24/7 Monitoring</span>
+                    </div>
+                    <div class="flex items-center text-lg">
+                        <i class="fas fa-check-circle text-green-300 mr-3"></i>
+                        <span>Expert Protection</span>
+                    </div>
+                </div>
+                
+                <button class="bg-accent text-accent-foreground px-8 py-4 rounded-lg text-xl font-semibold hover:bg-accent/90 transform hover:scale-105 transition-all shadow-xl" 
+                        data-event="click:scrollToBooking" 
+                        data-implementation="Should scroll to booking section smoothly">
+                    <i class="fas fa-calendar-check mr-3"></i>
+                    Schedule Your Free Audit Now
+                </button>
+                
+                <p class="text-sm text-blue-200 mt-4">
+                    ✓ No obligations • ✓ Same-day booking available • ✓ Trusted by 10,000+ homeowners
+                </p>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: HeroSection -->
+
+    <!-- @COMPONENT: FeaturesSection [Service benefits and features] -->
+    <section class="py-20 bg-background">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-foreground">Why Choose Our Protection Services?</h2>
+                <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    Comprehensive protection for your most valuable asset with industry-leading security measures.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- @MAP: features.map(feature => ( -->
+                <div class="feature-card bg-card rounded-lg p-8 shadow-sm border border-border">
+                    <div class="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-shield-alt text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-card-foreground">Title Fraud Protection</h3>
+                    <p class="text-muted-foreground leading-relaxed">
+                        Advanced monitoring systems detect and prevent title fraud attempts before they can affect your property ownership.
+                    </p>
+                </div>
+                
+                <div class="feature-card bg-card rounded-lg p-8 shadow-sm border border-border">
+                    <div class="w-16 h-16 bg-secondary/10 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-home text-secondary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-card-foreground">Asset Monitoring</h3>
+                    <p class="text-muted-foreground leading-relaxed">
+                        Continuous surveillance of your property records and immediate alerts for any suspicious activities or changes.
+                    </p>
+                </div>
+                
+                <div class="feature-card bg-card rounded-lg p-8 shadow-sm border border-border">
+                    <div class="w-16 h-16 bg-accent/10 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-user-shield text-accent text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-card-foreground">Expert Support</h3>
+                    <p class="text-muted-foreground leading-relaxed">
+                        Dedicated protection specialists available 24/7 to respond to threats and guide you through any issues.
+                    </p>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: FeaturesSection -->
+
+    <!-- @COMPONENT: ProcessSection [Step-by-step process explanation] -->
+    <section class="py-20 bg-muted/50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-foreground">Simple 3-Step Process</h2>
+                <p class="text-lg text-muted-foreground">Get protected in minutes with our streamlined onboarding process</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="text-center">
+                    <div class="step-number w-16 h-16 rounded-full text-white text-xl font-bold flex items-center justify-center mx-auto mb-6">1</div>
+                    <h3 class="text-xl font-semibold mb-4 text-foreground">Book Your Audit</h3>
+                    <p class="text-muted-foreground">Schedule a free security audit at your convenience. Our expert will visit your property within 7 days.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="step-number w-16 h-16 rounded-full text-white text-xl font-bold flex items-center justify-center mx-auto mb-6">2</div>
+                    <h3 class="text-xl font-semibold mb-4 text-foreground">Secure Payment</h3>
+                    <p class="text-muted-foreground">Complete payment securely through Square. $100 first month + $125 service charge for comprehensive protection.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="step-number w-16 h-16 rounded-full text-white text-xl font-bold flex items-center justify-center mx-auto mb-6">3</div>
+                    <h3 class="text-xl font-semibold mb-4 text-foreground">Instant Protection</h3>
+                    <p class="text-muted-foreground">Sign digital agreement via DocuSign and get immediate protection coverage with automated monitoring.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: ProcessSection -->
+
+    <!-- @COMPONENT: BookingSection [Main appointment booking form] -->
+    <section id="booking" class="py-20 bg-background">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4 text-foreground">Schedule Your Free Security Audit</h2>
+                    <p class="text-lg text-muted-foreground">Book your appointment and secure your property today</p>
+                </div>
+                
+                <!-- @STATE: bookingStep:string = 'form' -->
+                <!-- @STATE: formData:object = {} -->
+                <!-- @STATE: isLoading:boolean = false -->
+                
+                <div class="bg-card rounded-lg shadow-lg border border-border p-8">
+                    <!-- Step 1: Booking Form -->
+                    <div id="booking-form" class="booking-step">
+                        <form class="space-y-6" data-implementation="Should validate all fields before submission">
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-card-foreground mb-2">Full Name *</label>
+                                    <input type="text" 
+                                           class="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" 
+                                           placeholder="Enter your full name" 
+                                           data-bind="formData.fullName" 
+                                           data-mock="true" 
+                                           required>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-card-foreground mb-2">Email Address *</label>
+                                    <input type="email" 
+                                           class="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" 
+                                           placeholder="your.email@example.com" 
+                                           data-bind="formData.email" 
+                                           data-mock="true" 
+                                           required>
+                                </div>
+                            </div>
+                            
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-card-foreground mb-2">Phone Number *</label>
+                                    <input type="tel" 
+                                           class="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" 
+                                           placeholder="(555) 123-4567" 
+                                           data-bind="formData.phone" 
+                                           data-mock="true" 
+                                           required>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-card-foreground mb-2">Preferred Date *</label>
+                                    <input type="date" 
+                                           class="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" 
+                                           data-bind="formData.preferredDate" 
+                                           data-implementation="Should show dates within next 7 days only" 
+                                           required>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-card-foreground mb-2">Property Address *</label>
+                                <textarea class="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring h-24 resize-none" 
+                                          placeholder="Enter your complete property address" 
+                                          data-bind="formData.address" 
+                                          data-mock="true" 
+                                          required></textarea>
+                            </div>
+                            
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-card-foreground mb-2">Preferred Time</label>
+                                    <select class="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" 
+                                            data-bind="formData.preferredTime">
+                                        <option data-mock="true">Select time slot</option>
+                                        <option data-mock="true">9:00 AM - 11:00 AM</option>
+                                        <option data-mock="true">11:00 AM - 1:00 PM</option>
+                                        <option data-mock="true">1:00 PM - 3:00 PM</option>
+                                        <option data-mock="true">3:00 PM - 5:00 PM</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="flex items-end">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" 
+                                               id="ready-checkbox" 
+                                               class="w-5 h-5 text-primary border-input rounded focus:ring-ring" 
+                                               data-bind="formData.isReady" 
+                                               required>
+                                        <label for="ready-checkbox" class="ml-3 text-sm text-card-foreground">
+                                            I'm ready to proceed with the audit and protection service
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-muted/50 rounded-lg p-6 border border-border">
+                                <h4 class="font-semibold text-card-foreground mb-3">Service Investment:</h4>
+                                <div class="flex justify-between items-center text-lg">
+                                    <span class="text-muted-foreground">First Month Service:</span>
+                                    <span class="font-semibold text-foreground">$100.00</span>
+                                </div>
+                                <div class="flex justify-between items-center text-lg">
+                                    <span class="text-muted-foreground">Audit & Setup Fee:</span>
+                                    <span class="font-semibold text-foreground">$125.00</span>
+                                </div>
+                                <div class="border-t border-border my-3"></div>
+                                <div class="flex justify-between items-center text-xl font-bold">
+                                    <span class="text-card-foreground">Total Today:</span>
+                                    <span class="text-primary">$225.00</span>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" 
+                                    class="w-full bg-primary text-primary-foreground py-4 rounded-lg text-lg font-semibold hover:bg-primary/90 transition-colors shadow-lg" 
+                                    data-event="click:handleBookingSubmit" 
+                                    data-implementation="Should validate form, create user account if needed, then proceed to payment">
+                                <i class="fas fa-lock mr-3"></i>
+                                Book Appointment & Secure Payment
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Step 2: Payment Processing (Hidden by default) -->
+                    <div id="payment-section" class="booking-step hidden">
+                        <div class="text-center mb-8">
+                            <i class="fas fa-credit-card text-primary text-4xl mb-4"></i>
+                            <h3 class="text-2xl font-bold mb-2 text-card-foreground">Secure Payment</h3>
+                            <p class="text-muted-foreground">Complete your payment to confirm your appointment</p>
+                        </div>
+                        
+                        <!-- Square Payment Integration Placeholder -->
+                        <div class="bg-muted/30 rounded-lg p-8 border border-border text-center">
+                            <i class="fas fa-lock text-muted-foreground text-2xl mb-4"></i>
+                            <p class="text-muted-foreground mb-4">Square Payment Gateway Integration</p>
+                            <div class="bg-card rounded border border-border p-6">
+                                <!-- Square payment form will be injected here -->
+                                <p class="text-sm text-muted-foreground" data-implementation="Square Payment Form Component">
+                                    <!-- TODO: Implement Square payment form using Square Web SDK -->
+                                    Secure payment processing powered by Square
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Confirmation -->
+                    <div id="confirmation-section" class="booking-step hidden text-center">
+                        <div class="py-12">
+                            <i class="fas fa-check-circle text-secondary text-6xl mb-6"></i>
+                            <h3 class="text-3xl font-bold mb-4 text-card-foreground">Appointment Confirmed!</h3>
+                            <p class="text-lg text-muted-foreground mb-8">
+                                Your security audit has been scheduled. Check your email for confirmation details.
+                            </p>
+                            
+                            <div class="bg-muted/30 rounded-lg p-6 max-w-md mx-auto border border-border">
+                                <h4 class="font-semibold mb-3 text-card-foreground">Appointment Details:</h4>
+                                <div class="space-y-2 text-sm">
+                                    <p><span class="font-medium">Date:</span> <span data-bind="appointment.date" data-mock="true">March 15, 2024</span></p>
+                                    <p><span class="font-medium">Time:</span> <span data-bind="appointment.time" data-mock="true">10:00 AM - 12:00 PM</span></p>
+                                    <p><span class="font-medium">Service ID:</span> <span data-bind="appointment.id" data-mock="true">#AP-2024-001</span></p>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-8 space-y-4">
+                                <button class="bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors" 
+                                        data-event="click:accessDashboard" 
+                                        data-implementation="Should redirect to user dashboard">
+                                    <i class="fas fa-tachometer-alt mr-2"></i>
+                                    Access Your Dashboard
+                                </button>
+                                
+                                <p class="text-sm text-muted-foreground">
+                                    <!-- TODO: Implement DocuSign integration for automatic agreement sending -->
+                                    A DocuSign agreement will be sent to your email shortly.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: BookingSection -->
+
+    <!-- @COMPONENT: LoginModal [User authentication modal] -->
+    <div id="login-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-card rounded-lg shadow-xl max-w-md w-full border border-border">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-card-foreground">Sign In</h3>
+                    <button class="text-muted-foreground hover:text-foreground" data-event="click:closeModal">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <form class="space-y-4" data-implementation="Should implement authentication with Node.js backend">
+                    <div>
+                        <label class="block text-sm font-medium text-card-foreground mb-2">Email</label>
+                        <input type="email" 
+                               class="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" 
+                               placeholder="Enter your email" 
+                               data-mock="true" 
+                               required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-card-foreground mb-2">Password</label>
+                        <input type="password" 
+                               class="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" 
+                               placeholder="Enter your password" 
+                               data-mock="true" 
+                               required>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-primary text-primary-foreground py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                        Sign In
+                    </button>
+                </form>
+                
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-muted-foreground">
+                        Don't have an account? 
+                        <button class="text-primary hover:underline" data-event="click:showSignup">Sign up here</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: LoginModal -->
+
+    <!-- @COMPONENT: AdminDashboard [Admin panel for appointment management] -->
+    <section id="admin-panel" class="py-12 bg-background hidden" data-implementation="Should be protected route requiring admin authentication">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-foreground">Admin Dashboard</h2>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-muted-foreground">Welcome back, Admin</span>
+                    <button class="bg-destructive text-destructive-foreground px-4 py-2 rounded-lg text-sm hover:bg-destructive/90">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-card rounded-lg p-6 border border-border">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">Total Appointments</p>
+                            <p class="text-2xl font-bold text-card-foreground" data-bind="stats.totalAppointments" data-mock="true">127</p>
+                        </div>
+                        <i class="fas fa-calendar text-primary text-2xl"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-card rounded-lg p-6 border border-border">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">Pending</p>
+                            <p class="text-2xl font-bold text-accent-foreground" data-bind="stats.pending" data-mock="true">8</p>
+                        </div>
+                        <i class="fas fa-clock text-accent text-2xl"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-card rounded-lg p-6 border border-border">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">Confirmed</p>
+                            <p class="text-2xl font-bold text-secondary" data-bind="stats.confirmed" data-mock="true">94</p>
+                        </div>
+                        <i class="fas fa-check-circle text-secondary text-2xl"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-card rounded-lg p-6 border border-border">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">Revenue</p>
+                            <p class="text-2xl font-bold text-card-foreground" data-bind="stats.revenue" data-mock="true">$28,575</p>
+                        </div>
+                        <i class="fas fa-dollar-sign text-primary text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Appointments Table -->
+            <div class="bg-card rounded-lg border border-border overflow-hidden">
+                <div class="px-6 py-4 border-b border-border">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-card-foreground">Recent Appointments</h3>
+                        <div class="flex space-x-2">
+                            <select class="px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                                <option data-mock="true">All Status</option>
+                                <option data-mock="true">Pending</option>
+                                <option data-mock="true">Confirmed</option>
+                                <option data-mock="true">Completed</option>
+                            </select>
+                            <button class="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm hover:bg-primary/90">
+                                <i class="fas fa-plus mr-2"></i>Add Appointment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-muted/50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Client</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Payment</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-border">
+                            <!-- @MAP: appointments.map(appointment => ( -->
+                            <tr class="hover:bg-muted/30">
+                                <td class="px-6 py-4">
+                                    <div>
+                                        <p class="font-medium text-card-foreground" data-bind="appointment.clientName" data-mock="true">John Smith</p>
+                                        <p class="text-sm text-muted-foreground" data-bind="appointment.email" data-mock="true">john.smith@email.com</p>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-card-foreground" data-bind="appointment.scheduledDate" data-mock="true">Mar 15, 2024 10:00 AM</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-secondary/10 text-secondary" data-bind="appointment.status" data-mock="true">
+                                        Confirmed
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm font-medium text-card-foreground" data-bind="appointment.amount" data-mock="true">$225.00</span>
+                                    <p class="text-xs text-muted-foreground" data-bind="appointment.paymentStatus" data-mock="true">Paid</p>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex space-x-2">
+                                        <button class="text-primary hover:text-primary/80" data-event="click:viewAppointment" data-implementation="Should open appointment details modal">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="text-muted-foreground hover:text-foreground" data-event="click:editAppointment">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-destructive hover:text-destructive/80" data-event="click:cancelAppointment">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr class="hover:bg-muted/30">
+                                <td class="px-6 py-4">
+                                    <div>
+                                        <p class="font-medium text-card-foreground" data-mock="true">Sarah Johnson</p>
+                                        <p class="text-sm text-muted-foreground" data-mock="true">sarah.j@email.com</p>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-card-foreground" data-mock="true">Mar 16, 2024 2:00 PM</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-accent/10 text-accent" data-mock="true">
+                                        Pending
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm font-medium text-card-foreground" data-mock="true">$225.00</span>
+                                    <p class="text-xs text-muted-foreground" data-mock="true">Processing</p>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex space-x-2">
+                                        <button class="text-primary hover:text-primary/80">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="text-muted-foreground hover:text-foreground">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-destructive hover:text-destructive/80">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- @END_MAP )) -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: AdminDashboard -->
+
+    <!-- @COMPONENT: UserDashboard [Client dashboard for appointment tracking] -->
+    <section id="user-dashboard" class="py-12 bg-background hidden" data-implementation="Should be protected route requiring user authentication">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-foreground">My Dashboard</h2>
+                    <p class="text-muted-foreground" data-bind="user.name" data-mock="true">Welcome back, John Smith</p>
+                </div>
+                <button class="text-muted-foreground hover:text-foreground" data-event="click:logout">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+            
+            <!-- Current Appointment Card -->
+            <div class="bg-card rounded-lg p-6 mb-8 border border-border">
+                <h3 class="text-xl font-semibold mb-4 text-card-foreground flex items-center">
+                    <i class="fas fa-calendar-check text-primary mr-3"></i>
+                    Your Upcoming Appointment
+                </h3>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-muted-foreground">Date:</span>
+                            <span class="font-medium text-card-foreground" data-bind="appointment.date" data-mock="true">March 15, 2024</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-muted-foreground">Time:</span>
+                            <span class="font-medium text-card-foreground" data-bind="appointment.time" data-mock="true">10:00 AM - 12:00 PM</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-muted-foreground">Status:</span>
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-secondary/10 text-secondary" data-bind="appointment.status" data-mock="true">
+                                Confirmed
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-muted-foreground">Service ID:</span>
+                            <span class="font-medium text-card-foreground" data-bind="appointment.id" data-mock="true">#AP-2024-001</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-muted-foreground">Payment:</span>
+                            <span class="font-medium text-secondary" data-bind="appointment.paymentStatus" data-mock="true">Paid ($225.00)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-muted-foreground">Agreement:</span>
+                            <button class="text-primary hover:underline text-sm" data-event="click:viewAgreement" data-implementation="Should open DocuSign document">
+                                <i class="fas fa-file-contract mr-1"></i>View Agreement
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex space-x-4">
+                    <button class="bg-muted text-muted-foreground px-4 py-2 rounded-lg text-sm hover:bg-muted/80 transition-colors" 
+                            data-event="click:rescheduleAppointment">
+                        <i class="fas fa-calendar-alt mr-2"></i>Reschedule
+                    </button>
+                    <button class="bg-destructive text-destructive-foreground px-4 py-2 rounded-lg text-sm hover:bg-destructive/90 transition-colors" 
+                            data-event="click:cancelAppointment">
+                        <i class="fas fa-times mr-2"></i>Cancel
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Protection Status -->
+            <div class="bg-card rounded-lg p-6 border border-border">
+                <h3 class="text-xl font-semibold mb-4 text-card-foreground flex items-center">
+                    <i class="fas fa-shield-alt text-secondary mr-3"></i>
+                    Protection Status
+                </h3>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center p-4 bg-secondary/10 rounded-lg">
+                        <i class="fas fa-home text-secondary text-2xl mb-2"></i>
+                        <p class="text-sm text-muted-foreground">Property Monitoring</p>
+                        <p class="font-semibold text-secondary">Active</p>
+                    </div>
+                    
+                    <div class="text-center p-4 bg-primary/10 rounded-lg">
+                        <i class="fas fa-file-contract text-primary text-2xl mb-2"></i>
+                        <p class="text-sm text-muted-foreground">Title Protection</p>
+                        <p class="font-semibold text-primary">Active</p>
+                    </div>
+                    
+                    <div class="text-center p-4 bg-accent/10 rounded-lg">
+                        <i class="fas fa-bell text-accent text-2xl mb-2"></i>
+                        <p class="text-sm text-muted-foreground">Alert System</p>
+                        <p class="font-semibold text-accent">Enabled</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: UserDashboard -->
+
+    <!-- @COMPONENT: Footer [Site footer with contact info] -->
+    <footer class="bg-card border-t border-border py-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="md:col-span-2">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-shield-alt text-primary text-2xl mr-3"></i>
+                        <span class="text-xl font-bold text-foreground">GuardPortal</span>
+                    </div>
+                    <p class="text-muted-foreground mb-4 leading-relaxed">
+                        Protecting your property and assets with advanced monitoring and professional security services.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-muted-foreground hover:text-primary transition-colors">
+                            <i class="fab fa-facebook text-xl"></i>
+                        </a>
+                        <a href="#" class="text-muted-foreground hover:text-primary transition-colors">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-muted-foreground hover:text-primary transition-colors">
+                            <i class="fab fa-linkedin text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-card-foreground mb-4">Services</h4>
+                    <ul class="space-y-2 text-muted-foreground">
+                        <li><a href="#" class="hover:text-foreground transition-colors">Title Protection</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Asset Monitoring</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Security Audits</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">24/7 Support</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-card-foreground mb-4">Contact</h4>
+                    <ul class="space-y-2 text-muted-foreground">
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-2"></i>
+                            <span>(555) 123-4567</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            <span>support@guardportal.com</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-clock mr-2"></i>
+                            <span>24/7 Support</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-border mt-8 pt-8 text-center text-muted-foreground">
+                <p>&copy; 2024 GuardPortal. All rights reserved. | Privacy Policy | Terms of Service</p>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <script>
+    (function() {
+        // TODO: Implement proper authentication, payment processing, and appointment management
+        // TODO: Integrate with Node.js/Express backend
+        // TODO: Connect to PostgreSQL database
+        // TODO: Implement Square payment gateway
+        // TODO: Integrate DocuSign API for agreement signing
+        // TODO: Set up email automation system
+        
+        // Mock navigation and UI interactions for demonstration
+        let currentView = 'landing';
+        
+        // Modal handling
+        const loginModal = document.getElementById('login-modal');
+        const showLogin = () => loginModal.classList.remove('hidden');
+        const hideLogin = () => loginModal.classList.add('hidden');
+        
+        // Smooth scrolling for CTA
+        const scrollToBooking = () => {
+            document.getElementById('booking').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        };
+        
+        // View switching (mock navigation)
+        const showAdminPanel = () => {
+            document.getElementById('admin-panel').classList.remove('hidden');
+            // In real implementation, this would require admin authentication
+        };
+        
+        const showUserDashboard = () => {
+            document.getElementById('user-dashboard').classList.remove('hidden');
+            // In real implementation, this would require user authentication
+        };
+        
+        // Form handling placeholder
+        const handleBookingSubmit = (event) => {
+            event.preventDefault();
+            // TODO: Validate form data
+            // TODO: Create user account if doesn't exist
+            // TODO: Save appointment data to PostgreSQL
+            // TODO: Redirect to Square payment processing
+            // TODO: After payment success, trigger DocuSign and send confirmation email
+            console.log('Booking form submitted - implement backend integration');
+        };
+        
+        // Add event listeners for demonstration
+        document.addEventListener('click', (e) => {
+            if (e.target.dataset.event?.includes('handleLogin')) showLogin();
+            if (e.target.dataset.event?.includes('closeModal')) hideLogin();
+            if (e.target.dataset.event?.includes('scrollToBooking')) scrollToBooking();
+            if (e.target.closest('[data-event*="handleBookingSubmit"]')) handleBookingSubmit(e);
+        });
+        
+        // Click outside modal to close
+        loginModal?.addEventListener('click', (e) => {
+            if (e.target === loginModal) hideLogin();
+        });
+        
+        // Demo mode toggle (for presentation purposes)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('view') === 'admin') {
+            showAdminPanel();
+        } else if (urlParams.get('view') === 'dashboard') {
+            showUserDashboard();
+        }
+    })();
+    </script>
+</body>
+</html>
