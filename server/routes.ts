@@ -315,6 +315,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Payment processing route
+  app.post('/api/payment/process', authenticateToken, async (req: any, res) => {
+    try {
+      const { sourceId, amount, appointmentId } = req.body;
+      
+      if (!sourceId || !amount) {
+        return res.status(400).json({ message: 'Missing payment information' });
+      }
+
+      const paymentResult = await squareService.processPayment({
+        amount: amount,
+        currency: 'USD',
+        sourceId: sourceId,
+        appointmentId: appointmentId || `temp-${Date.now()}`,
+      });
+
+      res.json({
+        success: true,
+        paymentId: paymentResult.paymentId,
+        status: paymentResult.status,
+        amount: paymentResult.amount
+      });
+
+    } catch (error) {
+      console.error('Payment processing error:', error);
+      res.status(400).json({
+        message: error instanceof Error ? error.message : 'Payment processing failed'
+      });
+    }
+  });
+
   // DocuSign webhook for status updates
   app.post('/api/docusign/webhook', async (req, res) => {
     try {

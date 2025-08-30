@@ -18,14 +18,20 @@ class SquareService {
 
   constructor() {
     const accessToken = process.env.SQUARE_ACCESS_TOKEN;
-    const environment = process.env.NODE_ENV === 'production' 
+    const environment = process.env.SQUARE_ENVIRONMENT === 'production' 
       ? SquareEnvironment.Production 
       : SquareEnvironment.Sandbox;
 
+    if (!accessToken) {
+      throw new Error('Square access token not configured');
+    }
+
     this.client = new SquareClient({
-      accessToken: accessToken || '',
+      accessToken: accessToken,
       environment,
     });
+
+    console.log(`Square client initialized for ${environment} environment`);
   }
 
   async processPayment(request: PaymentRequest): Promise<PaymentResult> {

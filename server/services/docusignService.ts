@@ -1,4 +1,7 @@
+
 import * as docusign from 'docusign-esign';
+import * as fs from 'fs';
+import * as path from 'path';
 
 interface AgreementRequest {
   recipientEmail: string;
@@ -12,33 +15,60 @@ interface AgreementResult {
 }
 
 class DocusignService {
-  private apiClient: any;
+  private apiClient: docusign.ApiClient;
   private accountId: string;
+  private integrationKey: string;
+  private userId: string;
+  private privateKey: string;
+  private basePath: string;
 
   constructor() {
     this.accountId = process.env.DOCUSIGN_ACCOUNT_ID || '';
-    // Temporarily disable DocuSign to get app running
-    this.apiClient = null;
-    console.log('DocuSign service disabled for development');
+    this.integrationKey = process.env.DOCUSIGN_INTEGRATION_KEY || '';
+    this.userId = process.env.DOCUSIGN_USER_ID || '';
+    this.privateKey = process.env.DOCUSIGN_PRIVATE_KEY?.replace(/\\n/g, '\n') || '';
+    this.basePath = process.env.NODE_ENV === 'production' 
+      ? 'https://na3.docusign.net/restapi'
+      : 'https://demo.docusign.net/restapi';
+
+    this.apiClient = new docusign.ApiClient();
+    this.apiClient.setBasePath(this.basePath);
+    
+    if (this.integrationKey && this.userId && this.privateKey) {
+      this.configureJWTAuth();
+    } else {
+      console.log('DocuSign credentials not configured, DocuSign features will be disabled');
+    }
   }
 
-  private async configureAuth(): Promise<void> {
+  private async configureJWTAuth(): Promise<void> {
     try {
-      // Fallback to access token for now to avoid JWT key format issues
-      const accessToken = process.env.DOCUSIGN_ACCESS_TOKEN;
-      if (accessToken) {
-        this.apiClient.addDefaultHeader('Authorization', `Bearer ${accessToken}`);
-      } else {
-        console.log('DocuSign access token not configured, DocuSign features will be disabled');
+      const scopes = ['signature', 'impersonation'];
+      
+      const results = await this.apiClient.requestJWTUserToken(
+        this.integrationKey,
+        this.userId,
+        scopes,
+        this.privateKey,
+        3600
+      );
+
+      if (results && results.body && results.body.access_token) {
+        this.apiClient.addDefaultHeader('Authorization', `Bearer ${results.body.access_token}`);
+        console.log('DocuSign JWT authentication successful');
       }
     } catch (error) {
-      console.error('DocuSign authentication error:', error);
-      // Don't throw error, just log it so app can still start
+      console.error('DocuSign JWT authentication error:', error);
+      throw error;
     }
   }
 
   async sendAgreement(request: AgreementRequest): Promise<AgreementResult> {
     try {
+      if (!this.integrationKey || !this.userId || !this.privateKey) {
+        throw new Error('DocuSign credentials not configured');
+      }
+
       const envelopesApi = new docusign.EnvelopesApi(this.apiClient);
 
       // Create the envelope definition
@@ -47,123 +77,83 @@ class DocusignService {
       envelopeDefinition.status = 'sent';
 
       // Create document
-      const document = new docusign.Document();
-      document.documentBase64 = this.getAgreementTemplate(request);
-      document.name = 'Asset Protection Service Agreement';
-      document.fileExtension = 'pdf';
-      document.documentId = '1';
+      const document1 = new docusign.Document();
+      document1.documentBase64 = this.getAgreementDocumentBase64();
+      document1.name = 'Asset Protection Agreement';
+      document1.fileExtension = 'pdf';
+      document1.documentId = '1';
 
-      envelopeDefinition.documents = [document];
+      envelopeDefinition.documents = [document1];
 
       // Create recipient
-      const signer = new docusign.Signer();
-      signer.email = request.recipientEmail;
-      signer.name = request.recipientName;
-      signer.recipientId = '1';
-      signer.routingOrder = '1';
+      const signer1 = new docusign.Signer();
+      signer1.email = request.recipientEmail;
+      signer1.name = request.recipientName;
+      signer1.recipientId = '1';
+      signer1.routingOrder = '1';
 
-      // Add signature tab
-      const signHere = new docusign.SignHere();
-      signHere.anchorString = 'Signature:';
-      signHere.anchorUnits = 'pixels';
-      signHere.anchorXOffset = '20';
-      signHere.anchorYOffset = '10';
+      // Create signature tab
+      const signHere1 = new docusign.SignHere();
+      signHere1.documentId = '1';
+      signHere1.pageNumber = '1';
+      signHere1.recipientId = '1';
+      signHere1.tabLabel = 'SignHereTab';
+      signHere1.xPosition = '195';
+      signHere1.yPosition = '147';
 
-      const tabs = new docusign.Tabs();
-      tabs.signHereTabs = [signHere];
-      signer.tabs = tabs;
+      const signHereTabs = [signHere1];
+      signer1.tabs = new docusign.Tabs();
+      signer1.tabs.signHereTabs = signHereTabs;
 
       const recipients = new docusign.Recipients();
-      recipients.signers = [signer];
+      recipients.signers = [signer1];
       envelopeDefinition.recipients = recipients;
 
-      // Create envelope
-      const result = await envelopesApi.createEnvelope(this.accountId, {
-        envelopeDefinition,
+      // Create the envelope
+      const results = await envelopesApi.createEnvelope(this.accountId, {
+        envelopeDefinition: envelopeDefinition
       });
 
-      return {
-        envelopeId: result.envelopeId || '',
-        status: result.status || 'sent',
-      };
+      if (results && results.envelopeId) {
+        return {
+          envelopeId: results.envelopeId,
+          status: results.status || 'sent'
+        };
+      } else {
+        throw new Error('Failed to create DocuSign envelope');
+      }
     } catch (error) {
-      console.error('DocuSign envelope creation error:', error);
-      throw new Error(`Failed to send agreement: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('DocuSign error:', error);
+      throw new Error(`DocuSign agreement sending failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
-  private getAgreementTemplate(request: AgreementRequest): string {
-    // This would be a base64 encoded PDF template in production
-    // For now, we'll return a simple HTML-to-PDF conversion placeholder
-    const htmlContent = `
-      <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 40px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            .section { margin-bottom: 20px; }
-            .signature-line { margin-top: 50px; border-bottom: 1px solid #000; width: 300px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>GuardPortal Asset & Title Protection Agreement</h1>
-            <p>Service Agreement #${request.appointmentId}</p>
-          </div>
-          
-          <div class="section">
-            <h3>Agreement Details</h3>
-            <p>This agreement establishes the terms for asset and title protection services between GuardPortal and ${request.recipientName}.</p>
-          </div>
-          
-          <div class="section">
-            <h3>Services Included</h3>
-            <ul>
-              <li>24/7 Property monitoring and surveillance</li>
-              <li>Title fraud detection and alerts</li>
-              <li>Asset documentation and protection</li>
-              <li>Expert consultation and support</li>
-            </ul>
-          </div>
-          
-          <div class="section">
-            <h3>Payment Terms</h3>
-            <p>Monthly service fee: $100.00</p>
-            <p>Initial setup and audit fee: $125.00</p>
-            <p>Total initial payment: $225.00</p>
-          </div>
-          
-          <div class="section">
-            <h3>Terms and Conditions</h3>
-            <p>By signing this agreement, you acknowledge that you have read and agree to the terms of service for GuardPortal's asset and title protection services.</p>
-          </div>
-          
-          <div style="margin-top: 100px;">
-            <p>Client Name: ${request.recipientName}</p>
-            <p>Email: ${request.recipientEmail}</p>
-            <p>Date: ${new Date().toLocaleDateString()}</p>
-            
-            <div style="margin-top: 50px;">
-              <p>Signature: _________________________________</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
+  private getAgreementDocumentBase64(): string {
+    // This is a placeholder - you would replace this with your actual PDF document
+    // For now, we'll create a simple text document
+    const agreementText = `
+ASSET PROTECTION AGREEMENT
 
-    // In production, convert HTML to PDF and return base64
-    // For now, return base64 encoded HTML as placeholder
-    return Buffer.from(htmlContent).toString('base64');
+This agreement is between GuardPortal and the client for asset protection services.
+
+Client agrees to the terms and conditions outlined in this document.
+
+Signature: _____________________
+
+Date: _____________________
+    `;
+    
+    return Buffer.from(agreementText).toString('base64');
   }
 
   async getEnvelopeStatus(envelopeId: string): Promise<any> {
     try {
       const envelopesApi = new docusign.EnvelopesApi(this.apiClient);
-      const result = await envelopesApi.getEnvelope(this.accountId, envelopeId);
-      return result;
+      const results = await envelopesApi.getEnvelope(this.accountId, envelopeId);
+      return results;
     } catch (error) {
-      console.error('Error getting envelope status:', error);
-      throw error;
+      console.error('DocuSign get envelope status error:', error);
+      throw new Error(`Failed to get envelope status: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }

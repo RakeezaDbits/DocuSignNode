@@ -93,7 +93,12 @@ export const insertAppointmentSchema = createInsertSchema(appointments).extend({
   email: z.string().email("Valid email is required"),
   phone: z.string().min(10, "Valid phone number is required"),
   address: z.string().min(5, "Complete address is required"),
-  preferredDate: z.date().min(new Date(), "Date must be in the future"),
+  preferredDate: z.string().or(z.date()).transform((val) => {
+    if (typeof val === 'string') {
+      return new Date(val);
+    }
+    return val;
+  }),
   preferredTime: z.string().optional(),
   isReady: z.boolean().refine(val => val === true, "You must confirm readiness to proceed"),
 }).pick({

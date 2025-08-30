@@ -28,9 +28,9 @@ export default function SquarePayment({
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Get application ID and location ID from environment variables
-  const applicationId =
-    import.meta.env.SQUARE_APPLICATION_ID || "sandbox-sq0idb-example";
-  const locationId = import.meta.env.SQUARE_LOCATION_ID || "main";
+  const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
+  const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
+  const environment = import.meta.env.VITE_SQUARE_ENVIRONMENT || 'sandbox';
 
   // Load Square Web SDK
   useEffect(() => {
@@ -48,7 +48,9 @@ export default function SquarePayment({
     }
 
     const script = document.createElement("script");
-    script.src = "https://sandbox.web.squarecdn.com/v1/square.js";
+    script.src = environment === 'production' 
+      ? "https://web.squarecdn.com/v1/square.js"
+      : "https://sandbox.web.squarecdn.com/v1/square.js";
     script.async = true;
     script.onload = () => {
       console.log("Square Web SDK loaded successfully");
@@ -81,6 +83,12 @@ export default function SquarePayment({
           return;
         }
 
+        if (!applicationId || !locationId) {
+          console.error("Square credentials not configured");
+          onError("Payment system not configured. Please contact support.");
+          return;
+        }
+
         // Initialize payments with proper error handling
         const payments = window.Square.payments(applicationId, locationId);
         setPayments(payments);
@@ -101,7 +109,7 @@ export default function SquarePayment({
           },
         });
 
-        await card.attach("#card-container");
+        await card.attach(cardButtonRef.current);
         setCard(card);
 
         console.log("Square payment form initialized successfully");
@@ -192,6 +200,7 @@ export default function SquarePayment({
           <div className="space-y-6">
             <div
               ref={cardButtonRef}
+              id="card-container"
               className="min-h-[120px] p-4 border border-input rounded-lg bg-background"
               data-testid="square-card-form"
             />
