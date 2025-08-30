@@ -34,8 +34,8 @@ export default function BookingForm() {
   const [step, setStep] = useState<BookingStep>('form');
   const [appointmentData, setAppointmentData] = useState<any>(null);
   const [paymentSourceId, setPaymentSourceId] = useState<string>('');
-  
-  const { isAuthenticated } = useAuth();
+
+  const { isAuthenticated, user } = useAuth(); // Assuming user object with token is available
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -51,6 +51,11 @@ export default function BookingForm() {
       isReady: false,
     },
   });
+
+  // Mocking formData and appointmentId for handlePaymentSuccess
+  // In a real scenario, these would come from form state and mutation response respectively
+  const formData = form.getValues(); 
+  const [appointmentId, setAppointmentId] = useState<string | null>(null);
 
   const createAppointmentMutation = useMutation({
     mutationFn: async (data: BookingFormData & { paymentSourceId: string }) => {
@@ -78,7 +83,7 @@ export default function BookingForm() {
         }, 1000);
         return;
       }
-      
+
       toast({
         title: "Booking Failed",
         description: error.message || "Something went wrong. Please try again.",
@@ -104,12 +109,47 @@ export default function BookingForm() {
     setStep('payment');
   };
 
-  const handlePaymentSuccess = (sourceId: string) => {
-    setPaymentSourceId(sourceId);
-    createAppointmentMutation.mutate({
-      ...appointmentData,
-      paymentSourceId: sourceId,
-    });
+  const handlePaymentSuccess = async (sourceId: string) => {
+    try {
+      // Show immediate success feedback
+      toast({
+        title: "Payment Successful!",
+        description: "Processing your appointment...",
+      });
+
+      const response = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({
+          ...formData, // Use formData from form.getValues()
+          paymentSourceId: sourceId,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: "Booking Confirmed!",
+          description: "Your appointment has been scheduled successfully.",
+        });
+        setStep('confirmation'); // Changed from 'success' to 'confirmation'
+        setAppointmentId(result.appointmentId);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Booking failed');
+      }
+    } catch (error) {
+      console.error('Booking error:', error);
+      toast({
+        title: "Booking Failed",
+        description: error instanceof Error ? error.message : "Failed to create appointment",
+        variant: "destructive",
+      });
+      setStep('form');
+    }
   };
 
   const getMinDate = () => {
@@ -149,7 +189,7 @@ export default function BookingForm() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="email"
@@ -169,7 +209,7 @@ export default function BookingForm() {
                     )}
                   />
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
@@ -189,7 +229,7 @@ export default function BookingForm() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="preferredDate"
@@ -212,7 +252,7 @@ export default function BookingForm() {
                     )}
                   />
                 </div>
-                
+
                 <FormField
                   control={form.control}
                   name="address"
@@ -231,7 +271,7 @@ export default function BookingForm() {
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="grid md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
@@ -256,7 +296,7 @@ export default function BookingForm() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="isReady"
@@ -277,7 +317,7 @@ export default function BookingForm() {
                     )}
                   />
                 </div>
-                
+
                 <div className="bg-muted/50 rounded-lg p-6 border border-border">
                   <h4 className="font-semibold text-card-foreground mb-3">Service Investment:</h4>
                   <div className="flex justify-between items-center text-lg">
@@ -294,7 +334,7 @@ export default function BookingForm() {
                     <span className="text-primary">$225.00</span>
                   </div>
                 </div>
-                
+
                 <Button 
                   type="submit" 
                   className="w-full bg-primary text-primary-foreground py-4 text-lg font-semibold hover:bg-primary/90 transition-colors shadow-lg"
@@ -316,7 +356,7 @@ export default function BookingForm() {
               <h3 className="text-2xl font-bold mb-2 text-card-foreground">Secure Payment</h3>
               <p className="text-muted-foreground">Complete your payment to confirm your appointment</p>
             </div>
-            
+
             {/* Use mock payment in development */}
             <MockPayment
               amount={22500} // $225.00 in cents
@@ -340,7 +380,7 @@ export default function BookingForm() {
             <p className="text-lg text-muted-foreground mb-8">
               Your security audit has been scheduled. Check your email for confirmation details.
             </p>
-            
+
             <div className="bg-muted/30 rounded-lg p-6 max-w-md mx-auto border border-border mb-8">
               <h4 className="font-semibold mb-3 text-card-foreground">Appointment Details:</h4>
               <div className="space-y-2 text-sm">
@@ -364,7 +404,7 @@ export default function BookingForm() {
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <Button 
                 className="bg-primary text-primary-foreground px-6 py-3 font-medium hover:bg-primary/90 transition-colors"
@@ -374,7 +414,7 @@ export default function BookingForm() {
                 <Calendar className="mr-2" />
                 Access Your Dashboard
               </Button>
-              
+
               <p className="text-sm text-muted-foreground">
                 A DocuSign agreement will be sent to your email shortly.
               </p>

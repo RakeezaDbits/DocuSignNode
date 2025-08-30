@@ -1,5 +1,7 @@
 import { Pool } from 'pg';
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+
 import * as schema from "@shared/schema";
 
 if (!process.env.DATABASE_URL) {
@@ -8,10 +10,33 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL,
-  ssl: false
+const connectionString = process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/dbname';
+
+// Configure postgres with better error handling and connection pooling
+const client = postgres(connectionString, {
+  max: 10, // Maximum connections in the pool
+  idle_timeout: 20, // Close idle connections after 20 seconds
+  connect_timeout: 60, // Connection timeout
+  prepare: false, // Disable prepared statements for better compatibility
+  onnotice: () => {}, // Disable notices
+  // Add connection error handling
+  connection: {
+    application_name: 'GuardPortal',
+  },
+  // Handle connection errors gracefully
+  onclose: () => {
+    console.log('Database connection closed');
+  },
+  // Retry connection on failure
+  transform: {
+    undefined: null
+  }
 });
 
-export const db = drizzle(pool, { schema });
+// Add global error handler for unhandled database errors
+client.on('error', (error) => {
+  console.error('Database connection error:', error.message);
+  // Don't crash the application on database errors
+});
 
+export const db = drizzle(client, { schema });

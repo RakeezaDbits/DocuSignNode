@@ -166,29 +166,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: 'confirmed',
         });
 
-        // Send DocuSign agreement
-        const docusignResult = await docusignService.sendAgreement({
-          recipientEmail: appointment.email,
-          recipientName: appointment.fullName,
-          appointmentId: appointment.id,
-        });
+        // Try to send DocuSign agreement (non-blocking)
+        try {
+          const docusignResult = await docusignService.sendAgreement({
+            recipientEmail: appointment.email,
+            recipientName: appointment.fullName,
+            appointmentId: appointment.id,
+          });
 
-        // Update appointment with DocuSign info
-        await storage.updateAppointment(appointment.id, {
-          docusignStatus: 'sent',
-          docusignEnvelopeId: docusignResult.envelopeId,
-        });
+          // Update appointment with DocuSign info
+          await storage.updateAppointment(appointment.id, {
+            docusignStatus: 'sent',
+            docusignEnvelopeId: docusignResult.envelopeId,
+          });
+        } catch (docusignError) {
+          console.error('DocuSign error (non-blocking):', docusignError);
+          // Continue with appointment creation even if DocuSign fails
+        }
 
-        // Send confirmation email
-        await emailService.sendConfirmationEmail(appointment);
-        await storage.logEmail({
-          appointmentId: appointment.id,
-          emailType: 'confirmation',
-          sentTo: appointment.email,
-        });
+        // Try to send confirmation email (non-blocking)
+        try {
+          await emailService.sendConfirmationEmail(appointment);
+          await storage.logEmail({
+            appointmentId: appointment.id,
+            emailType: 'confirmation',
+            sentTo: appointment.email,
+          });
 
-        // Schedule reminder email (24 hours before)
-        await emailService.scheduleReminderEmail(appointment);
+          // Schedule reminder email (24 hours before)
+          await emailService.scheduleReminderEmail(appointment);
+        } catch (emailError) {
+          console.error('Email error (non-blocking):', emailError);
+          // Continue with appointment creation even if email fails
+        }
 
         res.json({ 
           success: true, 
