@@ -15,7 +15,7 @@ import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   return (
     <Switch>
@@ -30,8 +30,14 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={Home} />
+          <Route path="/dashboard">
+          {isAuthenticated ? (
+            user?.isAdmin ? <AdminDashboard /> : <UserDashboard />
+          ) : (
+            <Login />
+          )}
+        </Route>
           <Route path="/admin" component={AdminDashboard} />
-          <Route path="/dashboard" component={UserDashboard} />
         </>
       )}
       <Route component={NotFound} />

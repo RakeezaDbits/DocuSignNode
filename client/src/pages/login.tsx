@@ -43,8 +43,8 @@ export default function Login() {
         description: "You have been successfully logged in.",
       });
 
-      // Redirect to home page
-      setLocation('/');
+      // Redirect to dashboard
+      setLocation('/dashboard');
       
     } catch (error) {
       toast({
