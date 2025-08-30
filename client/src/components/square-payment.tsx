@@ -24,8 +24,8 @@ export default function SquarePayment({ amount, onSuccess, onError }: SquarePaym
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Get application ID and location ID from environment variables
-  const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID || process.env.SQUARE_APPLICATION_ID || 'sandbox-sq0idb-example';
-  const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID || process.env.SQUARE_LOCATION_ID || 'main';
+  const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID || 'sandbox-sq0idb-example';
+  const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID || 'main';
 
   // Load Square Web SDK
   useEffect(() => {
