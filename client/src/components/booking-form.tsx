@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import SquarePayment from "./square-payment";
+import MockPayment from "./mock-payment";
 import { insertAppointmentSchema } from "@shared/schema";
 import { Calendar, Lock, CheckCircle, Clock } from "lucide-react";
 
@@ -316,7 +317,8 @@ export default function BookingForm() {
               <p className="text-muted-foreground">Complete your payment to confirm your appointment</p>
             </div>
             
-            <SquarePayment
+            {/* Use mock payment in development */}
+            <MockPayment
               amount={22500} // $225.00 in cents
               onSuccess={handlePaymentSuccess}
               onError={(error) => {
