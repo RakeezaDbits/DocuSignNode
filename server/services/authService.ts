@@ -77,15 +77,34 @@ class AuthService {
       password: hashedPassword,
       firstName: data.firstName,
       lastName: data.lastName,
+      profileImageUrl: null,
+      isAdmin: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     // Send welcome email
     await emailService.sendWelcomeEmail(user);
 
     // Generate token
-    const token = this.generateToken(user);
+    const token = this.generateToken({
+      id: user.id,
+      email: user.email!,
+      firstName: user.firstName!,
+      lastName: user.lastName!,
+      isAdmin: user.isAdmin || false,
+    });
 
-    return { user, token };
+    return { 
+      user: {
+        id: user.id,
+        email: user.email!,
+        firstName: user.firstName!,
+        lastName: user.lastName!,
+        isAdmin: user.isAdmin || false,
+      }, 
+      token 
+    };
   }
 
   async login(credentials: LoginCredentials): Promise<{ user: AuthUser; token: string }> {
@@ -102,9 +121,24 @@ class AuthService {
     }
 
     // Generate token
-    const token = this.generateToken(user);
+    const token = this.generateToken({
+      id: user.id,
+      email: user.email!,
+      firstName: user.firstName!,
+      lastName: user.lastName!,
+      isAdmin: user.isAdmin || false,
+    });
 
-    return { user, token };
+    return { 
+      user: {
+        id: user.id,
+        email: user.email!,
+        firstName: user.firstName!,
+        lastName: user.lastName!,
+        isAdmin: user.isAdmin || false,
+      }, 
+      token 
+    };
   }
 
   async forgotPassword(email: string): Promise<void> {
