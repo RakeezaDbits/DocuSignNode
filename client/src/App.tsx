@@ -29,14 +29,14 @@ function Router() {
         </>
       ) : (
         <>
-          <Route path="/" component={Home} />
+          <Route path="/">
+            {user?.isAdmin ? <AdminDashboard /> : <UserDashboard />}
+          </Route>
           <Route path="/dashboard">
-          {isAuthenticated ? (
-            user?.isAdmin ? <AdminDashboard /> : <UserDashboard />
-          ) : (
-            <Login />
-          )}
-        </Route>
+            {user?.isAdmin ? <AdminDashboard /> : <UserDashboard />}
+          </Route>
+          <Route path="/home" component={Home} />
+          <Route path="/landing" component={Landing} />
           <Route path="/admin" component={AdminDashboard} />
         </>
       )}

@@ -97,7 +97,7 @@ export default function AdminDashboard() {
               </span>
               <Button
                 variant="ghost"
-                onClick={() => window.location.href = '/'}
+                onClick={() => window.location.href = '/home'}
                 data-testid="button-home"
               >
                 Home
