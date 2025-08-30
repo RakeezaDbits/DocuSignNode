@@ -34,7 +34,10 @@ class DocusignService {
     this.apiClient.setBasePath(this.basePath);
 
     if (this.integrationKey && this.userId && this.privateKey) {
-      this.configureJWTAuth();
+      this.configureJWTAuth().catch(error => {
+        console.error('DocuSign authentication failed:', error.message);
+        console.log('DocuSign features will be disabled');
+      });
     } else {
       console.log('DocuSign credentials not configured, DocuSign features will be disabled');
     }
