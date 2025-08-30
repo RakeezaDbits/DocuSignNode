@@ -1,4 +1,4 @@
-import * as docusign from 'docusign-esign';
+import docusign from 'docusign-esign';
 import * as fs from 'fs';
 import * as path from 'path';
 
