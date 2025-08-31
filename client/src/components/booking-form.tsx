@@ -111,41 +111,25 @@ export default function BookingForm() {
 
   const handlePaymentSuccess = async (sourceId: string) => {
     try {
+      if (!isAuthenticated || !user) {
+        throw new Error('Please log in to complete your booking');
+      }
+
       // Show immediate success feedback
       toast({
         title: "Payment Successful!",
         description: "Processing your appointment...",
       });
 
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
+      // Use the mutation instead of direct fetch
+      const appointmentData = {
+        ...form.getValues(),
+        paymentSourceId: sourceId,
+      };
 
-      const response = await fetch('/api/appointments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...formData, // Use formData from form.getValues()
-          paymentSourceId: sourceId,
-        }),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        toast({
-          title: "Booking Confirmed!",
-          description: "Your appointment has been scheduled successfully.",
-        });
-        setStep('confirmation'); // Changed from 'success' to 'confirmation'
-        setAppointmentId(result.appointmentId);
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Booking failed');
-      }
+      const response = await createAppointmentMutation.mutateAsync(appointmentData);
+      
+      // The mutation's onSuccess handler will handle the rest
     } catch (error) {
       console.error('Booking error:', error);
       toast({

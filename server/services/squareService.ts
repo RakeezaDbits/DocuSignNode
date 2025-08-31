@@ -42,7 +42,12 @@ class SquareService {
 
   async processPayment(request: PaymentRequest): Promise<PaymentResult> {
     try {
-      const paymentsApi = this.client.paymentsApi; // Corrected to paymentsApi
+      // Get the payments API instance
+      const paymentsApi = this.client.paymentsApi;
+      
+      if (!paymentsApi) {
+        throw new Error('Square Payments API not available');
+      }
 
       const requestBody = {
         sourceId: request.sourceId,
@@ -53,8 +58,14 @@ class SquareService {
         idempotencyKey: `${request.appointmentId}-${Date.now()}`,
         note: `GuardPortal Security Audit - Appointment ${request.appointmentId}`,
         referenceId: request.appointmentId,
-        locationId: this.locationId, // Added locationId
+        locationId: this.locationId,
       };
+
+      console.log('Processing Square payment with:', { 
+        amount: request.amount, 
+        sourceId: request.sourceId?.substring(0, 20) + '...', 
+        locationId: this.locationId 
+      });
 
       const response = await paymentsApi.createPayment(requestBody);
 
