@@ -117,11 +117,16 @@ export default function BookingForm() {
         description: "Processing your appointment...",
       });
 
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
       const response = await fetch('/api/appointments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           ...formData, // Use formData from form.getValues()
