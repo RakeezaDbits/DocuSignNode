@@ -33,10 +33,7 @@ const client = postgres(connectionString, {
   }
 });
 
-// Add global error handler for unhandled database errors
-client.on('error', (error) => {
-  console.error('Database connection error:', error.message);
-  // Don't crash the application on database errors
-});
+// The postgres client handles errors internally
+// No need for manual error handlers with the postgres package
 
 export const db = drizzle(client, { schema });
