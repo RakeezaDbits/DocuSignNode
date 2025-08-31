@@ -14,22 +14,24 @@ const connectionString = process.env.DATABASE_URL || 'postgresql://user:password
 
 // Configure postgres with better error handling and connection pooling
 const client = postgres(connectionString, {
-  max: 10, // Maximum connections in the pool
-  idle_timeout: 20, // Close idle connections after 20 seconds
-  connect_timeout: 60, // Connection timeout
-  prepare: false, // Disable prepared statements for better compatibility
-  onnotice: () => {}, // Disable notices
-  // Add connection error handling
+  host: 'localhost',
+  port: 5432,
+  database: 'guardportal',
+  username: 'admin',
+  password: 'guardportal123',
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  max: 20,
+  idle_timeout: 30,
+  connect_timeout: 60,
+  max_lifetime: 60 * 30,
   connection: {
-    application_name: 'GuardPortal',
+    application_name: 'guardportal_app',
   },
-  // Handle connection errors gracefully
-  onclose: () => {
-    console.log('Database connection closed');
+  onnotice: (notice) => {
+    console.log('Database notice:', notice.message);
   },
-  // Retry connection on failure
-  transform: {
-    undefined: null
+  onparameter: (key, value) => {
+    console.log('Database parameter:', key, value);
   }
 });
 
