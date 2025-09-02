@@ -95,16 +95,23 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-2xl border-0 overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-green-600 to-blue-600 text-white text-center py-8">
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-white/20 p-3 rounded-full">
-              <Shield className="h-8 w-8" />
+    <div className="min-h-screen hero-gradient flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-24 h-24 bg-white/5 rounded-full blur-lg animate-pulse delay-1000"></div>
+        <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-white/5 rounded-full blur-2xl animate-pulse delay-2000"></div>
+      </div>
+      
+      <Card className="w-full max-w-lg shadow-2xl border border-white/20 backdrop-blur-sm bg-white/95 overflow-hidden relative z-10 animate-fade-in">
+        <CardHeader className="bg-gradient-to-r from-primary via-secondary to-accent text-white text-center py-12">
+          <div className="flex items-center justify-center mb-6">
+            <div className="bg-white/20 p-4 rounded-full pulse-glow">
+              <Shield className="h-10 w-10" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Join GuardPortal</CardTitle>
-          <p className="text-green-100 mt-2">Create your account to get started</p>
+          <CardTitle className="text-4xl font-bold mb-2">Join GuardPortal</CardTitle>
+          <p className="text-white/90 mt-2 text-lg">Create your account and start protecting your property today</p>
         </CardHeader>
         
         <CardContent className="p-8">

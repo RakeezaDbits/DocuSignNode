@@ -154,22 +154,36 @@ export default function BookingForm() {
   };
 
   return (
-    <Card className="shadow-lg border border-border" data-testid="card-booking-form">
-      <CardContent className="p-8">
+    <Card className="shadow-2xl border border-primary/20 bg-gradient-to-br from-card to-card/80 backdrop-blur-sm" data-testid="card-booking-form">
+      <CardContent className="p-8 md:p-12">
         {step === 'form' && (
-          <div data-testid="booking-step-form">
+          <div data-testid="booking-step-form" className="animate-fade-in">
+            {/* Form Header */}
+            <div className="text-center mb-10">
+              <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Book Your Security Audit
+              </h3>
+              <p className="text-lg text-muted-foreground">
+                Fill out the form below to schedule your free property security assessment
+              </p>
+            </div>
+            
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <div className="grid md:grid-cols-2 gap-8">
                   <FormField
                     control={form.control}
                     name="fullName"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Full Name *</FormLabel>
+                      <FormItem className="space-y-3">
+                        <FormLabel className="text-lg font-semibold text-foreground">Full Name *</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="Enter your full name" 
+                            className="h-12 text-lg border-2 border-border focus:border-primary transition-all"
                             {...field} 
                             data-testid="input-full-name"
                           />
@@ -183,12 +197,13 @@ export default function BookingForm() {
                     control={form.control}
                     name="email"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email Address *</FormLabel>
+                      <FormItem className="space-y-3">
+                        <FormLabel className="text-lg font-semibold text-foreground">Email Address *</FormLabel>
                         <FormControl>
                           <Input 
                             type="email"
                             placeholder="your.email@example.com" 
+                            className="h-12 text-lg border-2 border-border focus:border-primary transition-all"
                             {...field} 
                             data-testid="input-email"
                           />
@@ -307,31 +322,46 @@ export default function BookingForm() {
                   />
                 </div>
 
-                <div className="bg-muted/50 rounded-lg p-6 border border-border">
-                  <h4 className="font-semibold text-card-foreground mb-3">Service Investment:</h4>
-                  <div className="flex justify-between items-center text-lg">
-                    <span className="text-muted-foreground">First Month Service:</span>
-                    <span className="font-semibold text-foreground">$100.00</span>
-                  </div>
-                  <div className="flex justify-between items-center text-lg">
-                    <span className="text-muted-foreground">Audit & Setup Fee:</span>
-                    <span className="font-semibold text-foreground">$125.00</span>
-                  </div>
-                  <div className="border-t border-border my-3"></div>
-                  <div className="flex justify-between items-center text-xl font-bold">
-                    <span className="text-card-foreground">Total Today:</span>
-                    <span className="text-primary">$225.00</span>
+                <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 rounded-2xl p-8 border-2 border-primary/20 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl"></div>
+                  <div className="relative z-10">
+                    <h4 className="font-bold text-xl text-card-foreground mb-6 flex items-center">
+                      <Lock className="mr-3 w-6 h-6 text-primary" />
+                      Service Investment
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center text-lg p-3 bg-white/50 rounded-lg">
+                        <span className="font-medium text-muted-foreground">First Month Service:</span>
+                        <span className="font-bold text-foreground text-xl">$100.00</span>
+                      </div>
+                      <div className="flex justify-between items-center text-lg p-3 bg-white/50 rounded-lg">
+                        <span className="font-medium text-muted-foreground">Audit & Setup Fee:</span>
+                        <span className="font-bold text-foreground text-xl">$125.00</span>
+                      </div>
+                      <div className="border-t-2 border-primary/30 my-4"></div>
+                      <div className="flex justify-between items-center text-2xl font-bold p-4 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-xl border border-primary/30">
+                        <span className="text-card-foreground">Total Today:</span>
+                        <span className="text-primary text-3xl">$225.00</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-primary text-primary-foreground py-4 text-lg font-semibold hover:bg-primary/90 transition-colors shadow-lg"
+                  className="w-full bg-gradient-to-r from-primary via-secondary to-accent hover:from-primary/90 hover:via-secondary/90 hover:to-accent/90 text-white py-6 text-xl font-bold transition-all transform hover:scale-105 shadow-2xl hover:shadow-3xl"
                   disabled={form.formState.isSubmitting}
                   data-testid="button-book-appointment"
                 >
-                  <Lock className="mr-3" />
-                  Book Appointment & Secure Payment
+                  <Lock className="mr-4 w-6 h-6" />
+                  {form.formState.isSubmitting ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                      Processing...
+                    </div>
+                  ) : (
+                    'Book Appointment & Secure Payment'
+                  )}
                 </Button>
               </form>
             </Form>
@@ -339,11 +369,13 @@ export default function BookingForm() {
         )}
 
         {step === 'payment' && (
-          <div className="text-center" data-testid="booking-step-payment">
-            <div className="mb-8">
-              <Calendar className="text-primary text-4xl mx-auto mb-4" />
-              <h3 className="text-2xl font-bold mb-2 text-card-foreground">Secure Payment</h3>
-              <p className="text-muted-foreground">Complete your payment to confirm your appointment</p>
+          <div className="text-center animate-fade-in" data-testid="booking-step-payment">
+            <div className="mb-12">
+              <div className="w-20 h-20 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-6 pulse-glow">
+                <Lock className="text-white text-4xl" />
+              </div>
+              <h3 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Secure Payment</h3>
+              <p className="text-xl text-muted-foreground">Complete your payment to confirm your appointment</p>
             </div>
 
             {/* Use mock payment in development */}
@@ -363,11 +395,14 @@ export default function BookingForm() {
         )}
 
         {step === 'confirmation' && (
-          <div className="text-center py-12" data-testid="booking-step-confirmation">
-            <CheckCircle className="text-secondary text-6xl mx-auto mb-6" />
-            <h3 className="text-3xl font-bold mb-4 text-card-foreground">Appointment Confirmed!</h3>
-            <p className="text-lg text-muted-foreground mb-8">
-              Your security audit has been scheduled. Check your email for confirmation details.
+          <div className="text-center py-16 animate-bounce-in" data-testid="booking-step-confirmation">
+            <div className="relative">
+              <CheckCircle className="text-secondary text-8xl mx-auto mb-8 animate-pulse" />
+              <div className="absolute inset-0 text-secondary text-8xl mx-auto mb-8 pulse-glow opacity-50"></div>
+            </div>
+            <h3 className="text-5xl font-bold mb-6 bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent">Appointment Confirmed!</h3>
+            <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
+              🎉 Your security audit has been successfully scheduled! Check your email for detailed confirmation and next steps.
             </p>
 
             <div className="bg-muted/30 rounded-lg p-6 max-w-md mx-auto border border-border mb-8">
