@@ -10,15 +10,10 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-const connectionString = process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/dbname';
+const connectionString = process.env.DATABASE_URL;
 
 // Configure postgres with better error handling and connection pooling
 const client = postgres(connectionString, {
-  host: 'localhost',
-  port: 5432,
-  database: 'guardportal',
-  username: 'admin',
-  password: 'guardportal123',
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   max: 20,
   idle_timeout: 30,
